@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>计算机求职八股文知识库</title>
+<style>
+:root {
+  --accent: #C81623; --accent-dark: #A01019; --bg: #f7f7f9; --card: #fff;
+  --text: #2c2c33; --muted: #6b6b76; --border: #e6e6ec; --code-bg: #f2f2f5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; }
+header { background: linear-gradient(135deg, #1d1d22 0%, #3a3a44 100%); color: #fff; padding: 28px 32px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+header h1 { font-size: 22px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+header h1 .tag { font-size: 12px; background: var(--accent); padding: 2px 10px; border-radius: 999px; font-weight: normal; }
+header .sub { font-size: 13px; color: #b9b9c4; margin-top: 4px; }
+header nav { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+header nav a { color: #e8e8ee; font-size: 13px; text-decoration: none; padding: 4px 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; transition: all .2s; }
+header nav a:hover { background: var(--accent); border-color: var(--accent); }
+.layout { display: flex; max-width: 1400px; margin: 0 auto; gap: 24px; padding: 24px 16px; }
+aside { width: 250px; flex-shrink: 0; position: sticky; top: 130px; align-self: flex-start; max-height: calc(100vh - 150px); overflow-y: auto; }
+aside .search { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 12px; outline: none; }
+aside .search:focus { border-color: var(--accent); }
+aside a { display: block; padding: 6px 12px; font-size: 13px; color: var(--muted); text-decoration: none; border-left: 3px solid transparent; border-radius: 0 6px 6px 0; }
+aside a:hover { color: var(--accent); background: rgba(200,22,35,.05); }
+aside a.lvl1 { font-weight: 600; color: var(--text); margin-top: 8px; }
+aside a.lvl2 { padding-left: 26px; font-size: 12.5px; }
+main { flex: 1; min-width: 0; }
+section { margin-bottom: 36px; }
+h2 { font-size: 20px; padding: 10px 0 10px 14px; border-left: 5px solid var(--accent); margin-bottom: 16px; background: var(--card); border-radius: 0 8px 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+h3 { font-size: 15.5px; color: var(--accent-dark); margin: 22px 0 10px; }
+details { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; transition: box-shadow .2s; }
+details:hover { box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+details[open] { border-color: rgba(200,22,35,.35); }
+summary { padding: 13px 18px; font-weight: 600; font-size: 14.5px; cursor: pointer; list-style: none; display: flex; align-items: baseline; gap: 10px; user-select: none; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▸"; color: var(--accent); font-size: 12px; transition: transform .2s; flex-shrink: 0; }
+details[open] summary::before { transform: rotate(90deg); }
+summary .qno { font-size: 12px; color: #fff; background: var(--accent); border-radius: 4px; padding: 1px 7px; flex-shrink: 0; }
+.ans { padding: 4px 20px 16px; font-size: 14px; color: #3a3a44; }
+.ans p { margin: 8px 0; }
+.ans ul, .ans ol { padding-left: 22px; margin: 8px 0; }
+.ans li { margin: 4px 0; }
+.ans b, .ans strong { color: #1d1d22; }
+.ans code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 13px; font-family: "JetBrains Mono", Consolas, monospace; color: var(--accent-dark); }
+.ans pre { background: #24242e; color: #e8e8ee; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 10px 0; }
+.ans pre code { background: none; color: inherit; padding: 0; }
+.ans table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+.ans th, .ans td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; }
+.ans th { background: var(--code-bg); font-weight: 600; }
+.key { color: var(--accent); font-weight: 600; }
+.hidden { display: none; }
+#noResult { text-align: center; color: var(--muted); padding: 40px; display: none; }
+#backTop { position: fixed; right: 24px; bottom: 30px; width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 18px; cursor: pointer; box-shadow: 0 4px 12px rgba(200,22,35,.4); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99; }
+#backTop.show { opacity: 1; pointer-events: auto; }
+@media (max-width: 900px) { aside { display: none; } .layout { padding: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>计算机求职八股文知识库 <span class="tag">持续更新</span></h1>
+  <div class="sub">覆盖：计算机基础 · 机器学习 · 深度学习 · 大模型（LLM）· 搜广推 · AI Agent · 面试通用 —— 面向算法 / 大模型 / 搜广推 / Agent 岗位求职</div>
+  <nav>
+    <a href="jobs.html">📍 岗位与技能要求</a>
+    <a href="../index.html">📝 LeetCode HOT 100 刷题</a>
+    <a href="https://github.com/YandL6/project" target="_blank">GitHub 仓库</a>
+  </nav>
+</header>
+<div class="layout">
+<aside>
+  <input class="search" id="searchBox" type="text" placeholder="🔍 搜索知识点，如：KV Cache">
+  <nav id="sideNav">
+    <a class="lvl1" href="#sec1">一、计算机基础</a>
+    <a class="lvl2" href="#sec1-1">1.1 操作系统</a>
+    <a class="lvl2" href="#sec1-2">1.2 计算机网络</a>
+    <a class="lvl2" href="#sec1-3">1.3 数据库与缓存</a>
+    <a class="lvl2" href="#sec1-4">1.4 数据结构与算法</a>
+    <a class="lvl1" href="#sec2">二、机器学习基础</a>
+    <a class="lvl2" href="#sec2-1">2.1 基础概念</a>
+    <a class="lvl2" href="#sec2-2">2.2 经典模型</a>
+    <a class="lvl2" href="#sec2-3">2.3 优化与评估</a>
+    <a class="lvl1" href="#sec3">三、深度学习基础</a>
+    <a class="lvl2" href="#sec3-1">3.1 训练机制</a>
+    <a class="lvl2" href="#sec3-2">3.2 结构与组件</a>
+    <a class="lvl1" href="#sec4">四、大模型（LLM）</a>
+    <a class="lvl2" href="#sec4-1">4.1 Transformer 架构</a>
+    <a class="lvl2" href="#sec4-2">4.2 预训练与分词</a>
+    <a class="lvl2" href="#sec4-3">4.3 后训练（SFT / RLHF）</a>
+    <a class="lvl2" href="#sec4-4">4.4 高效微调与推理</a>
+    <a class="lvl2" href="#sec4-5">4.5 RAG 与评测</a>
+    <a class="lvl1" href="#sec5">五、搜广推</a>
+    <a class="lvl2" href="#sec5-1">5.1 系统架构</a>
+    <a class="lvl2" href="#sec5-2">5.2 召回</a>
+    <a class="lvl2" href="#sec5-3">5.3 排序模型演进</a>
+    <a class="lvl2" href="#sec5-4">5.4 多任务与机制</a>
+    <a class="lvl1" href="#sec6">六、AI Agent</a>
+    <a class="lvl2" href="#sec6-1">6.1 概念与范式</a>
+    <a class="lvl2" href="#sec6-2">6.2 核心组件</a>
+    <a class="lvl2" href="#sec6-3">6.3 工程与评测</a>
+    <a class="lvl1" href="#sec7">七、面试通用</a>
+  </nav>
+</aside>
+<main>
+<div id="noResult">没有匹配的知识点，换个关键词试试</div>
+
+<!-- ================= 一、计算机基础 ================= -->
+<section id="sec1">
+<h2>一、计算机基础</h2>
+
+<h3 id="sec1-1">1.1 操作系统</h3>
+<details><summary><span class="qno">Q1</span>进程和线程的区别？协程又是什么？</summary><div class="ans">
+<p><b>进程</b>是资源分配的基本单位，拥有独立的虚拟地址空间、文件描述符表等；<b>线程</b>是 CPU 调度的基本单位，同进程内的线程共享地址空间和资源，只拥有自己的栈、寄存器和程序计数器。</p>
+<ul>
+<li><b>隔离性</b>：进程间隔离（一个进程崩溃不影响其他进程），线程间不隔离（一个线程段错误可能带崩整个进程）</li>
+<li><b>切换开销</b>：进程切换需切换页表（TLB 失效）、换内核栈，开销大；线程切换只保存寄存器和栈指针，开销小得多</li>
+<li><b>通信方式</b>：进程间需 IPC（管道/消息队列/共享内存/信号量/socket）；线程间直接读写共享变量 + 同步原语（锁/条件变量）</li>
+<li><b>协程</b>：用户态的轻量"线程"，切换不陷入内核（无需系统调用），由程序自己调度（如 Go 的 goroutine、Python 的 asyncio）。代价是协程内不能有阻塞调用，否则会卡住整个线程</li>
+</ul>
+<p><b>追问高频</b>：为什么有了多线程还要多进程？——隔离与安全（如 Chrome 每个标签页一个进程）；Python GIL 导致多线程无法并行 CPU 密集任务，要用多进程或协程。</p>
+</div></details>
+
+<details><summary><span class="qno">Q2</span>进程间通信（IPC）有哪些方式？各自适用场景？</summary><div class="ans">
+<ul>
+<li><b>管道（pipe）</b>：半双工，单向字节流，父子进程间用；命名管道（FIFO）允许无亲缘关系进程</li>
+<li><b>消息队列</b>：内核中的消息链表，按类型收发，有格式边界，独立于收发进程生命周期</li>
+<li><b>共享内存</b>：两进程映射同一块物理内存，<span class="key">最快</span>的 IPC（零拷贝），但必须配信号量等同步机制防止竞争。大数据量传输首选</li>
+<li><b>信号量</b>：主要用于同步（P/V 操作），而非传数据</li>
+<li><b>信号（signal）</b>：异步通知机制，如 SIGKILL、SIGSEGV</li>
+<li><b>Socket</b>：唯一可跨主机的 IPC，本地可用 Unix Domain Socket（比 TCP socket 快，不走网络协议栈）</li>
+</ul>
+<p><b>面试要点</b>：共享内存为什么快——数据不需要在内核态和用户态之间来回复制，一次映射后直接读写；管道则每次 write/read 都要陷入内核并拷贝两次。</p>
+</div></details>
+
+<details><summary><span class="qno">Q3</span>死锁产生的四个必要条件？如何预防和避免？</summary><div class="ans">
+<p><b>四个必要条件</b>（缺一不可，打破任一即可破死锁）：</p>
+<ol>
+<li><b>互斥</b>：资源一次只能被一个进程持有</li>
+<li><b>持有并等待</b>：进程持有资源的同时等待别的资源</li>
+<li><b>不可剥夺</b>：资源不能被强行抢走</li>
+<li><b>循环等待</b>：进程间形成环形等待链</li>
+</ol>
+<p><b>预防</b>：一次性申请所有资源（破坏 2）；资源可抢占（破坏 3）；按全局顺序加锁（破坏 4，工程上最常用，如规定所有锁按 id 升序获取）。</p>
+<p><b>避免</b>：银行家算法——分配前判断系统是否仍处于安全状态。工程上更常见的是<b>检测+恢复</b>：超时放弃锁、死锁检测线程杀掉牺牲者。</p>
+<p>实际写代码层面：std::lock(mtx1, mtx2) 一次性锁多个锁避免顺序死锁；try_lock + 退避重试。</p>
+</div></details>
+
+<details><summary><span class="qno">Q4</span>什么是虚拟内存？页缺失有哪些类型？页面置换算法？</summary><div class="ans">
+<p><b>虚拟内存</b>：给每个进程一个独立、连续的假象地址空间，通过页表映射到物理内存/磁盘。作用：进程隔离、按需分配（程序可以大于物理内存）、简化内存管理。</p>
+<ul>
+<li><b>页缺失类型</b>：① 硬缺页（页在磁盘，需 IO，代价 ~ms 级）② 软缺页（页在内存但没建立映射，如写时复制 COW 触发）③ 无效缺页（非法访问 → 段错误）</li>
+<li><b>写时复制（COW）</b>：fork 后父子共享物理页，标记只读，谁写谁触发缺页再复制——fork 快的原因</li>
+<li><b>置换算法</b>：FIFO（可能 Belady 异常）、LRU（近似实现：时钟/二次机会算法，硬件只给访问位）、LFU、OPT（理论最优，不可实现，用于对比）</li>
+</ul>
+<p><b>延伸</b>：TLB 是页表的 cache；多级页表解决页表本身太大的问题；大页（HugePage）减少 TLB miss——推理服务部署常用 2MB 大页提升性能。</p>
+</div></details>
+
+<details><summary><span class="qno">Q5</span>用户态和内核态？什么操作会导致切换？</summary><div class="ans">
+<p><b>用户态</b>：只能访问受限指令和自己的地址空间；<b>内核态</b>：可执行特权指令、访问所有硬件。切换由<b>系统调用、中断、异常</b>触发。</p>
+<p>切换成本高：保存/恢复寄存器、切换内核栈、页表隔离（KPTI）下还要切 CR3，一次系统调用约 1~几 μs。<b>这就是零拷贝、epoll、io_uring 等优化的动机</b>——减少陷入内核的次数和数据在内核/用户态之间的拷贝次数。</p>
+</div></details>
+
+<details><summary><span class="qno">Q6</span>select / poll / epoll 的区别？为什么 epoll 快？</summary><div class="ans">
+<p>三者都是 <b>IO 多路复用</b>：一个线程监听多个 fd 的就绪事件。</p>
+<table>
+<tr><th></th><th>select</th><th>poll</th><th>epoll</th></tr>
+<tr><td>fd 上限</td><td>FD_SETSIZE=1024</td><td>无硬限制</td><td>无（受系统内存）</td></tr>
+<tr><td>fd 传递</td><td>每次调用全量拷贝进内核</td><td>同左</td><td>注册一次（epoll_ctl），事件发生时内核回调挂入就绪链表</td></tr>
+<tr><td>就绪查找</td><td>O(n) 线性扫描</td><td>O(n)</td><td>O(1) 直接取就绪链表（epoll_wait）</td></tr>
+<tr><td>触发模式</td><td>LT</td><td>LT</td><td>LT / <b>ET</b>（边缘触发，需非阻塞 fd + 一次读干净）</td></tr>
+</table>
+<p><b>epoll 快的本质</b>：把"每次注册+全量扫描"变成"注册一次 + 事件驱动回调"，活跃 fd 多时优势缩小，活跃 fd 少而监听 fd 多时（典型：长连接网关）优势巨大。</p>
+<p><b>追问</b>：ET 和 LT 的区别？ET 只在状态变化时通知一次，必须一次性读完（循环 read 直到 EAGAIN），否则剩余数据不再通知；LT 只要缓冲区有数据就持续通知，编程简单但可能重复唤醒。</p>
+</div></details>
+
+<details><summary><span class="qno">Q7</span>互斥锁、自旋锁、读写锁的区别与选择？</summary><div class="ans">
+<ul>
+<li><b>互斥锁（mutex）</b>：拿不到就睡眠，让出 CPU。临界区较长、持锁时间不确定时用，上下文切换成本 ~μs</li>
+<li><b>自旋锁（spinlock）</b>：拿不到就忙等（循环 CAS）。临界区极短（几十 ns 级）时反而省了睡眠/唤醒两次切换；内核/中断上下文只能用它（不能睡眠）</li>
+<li><b>读写锁</b>：读共享、写独占。读多写少场景提升并发；注意写者可能饿死（需写优先版本）</li>
+<li><b>RCU</b>：读端几乎零开销（不加锁），写端复制后原子切换指针、延迟释放旧版本——适合读极多写极少的数据结构</li>
+</ul>
+<p><b>经验法则</b>：持锁 &lt; 两次上下文切换的成本（约 1~2μs）→ 自旋更划算；否则睡眠锁。CAS 无锁结构适合极短操作但要注意 ABA 问题。</p>
+</div></details>
+
+<h3 id="sec1-2">1.2 计算机网络</h3>
+<details><summary><span class="qno">Q8</span>TCP 和 UDP 的区别及各自适用场景？</summary><div class="ans">
+<p><b>TCP</b>：面向连接、可靠传输（确认+重传+排序）、流量控制（滑动窗口）/ 拥塞控制、字节流（无消息边界）、点对点。头部 20B+。</p>
+<p><b>UDP</b>：无连接、尽力而为、数据报（有边界）、支持一对多广播/组播。头部 8B，开销小延迟低。</p>
+<ul>
+<li>TCP 适用：HTTP/文件传输/数据库连接——不能丢的场景</li>
+<li>UDP 适用：音视频（丢几帧无妨，延迟敏感）、DNS 查询、游戏、QUIC（在 UDP 上自己实现了可靠传输，绕开 TCP 内核栈的历史包袱 + 支持连接迁移）</li>
+</ul>
+<p><b>追问</b>：视频会议为什么不用 TCP？——TCP 队头阻塞 + 重传放大延迟，实时性优先于完整性，宁可丢帧；且弱网下 TCP 拥塞控制会主动降速，画质雪崩。</p>
+</div></details>
+
+<details><summary><span class="qno">Q9</span>三次握手过程与每一步的作用？为什么不能两次？</summary><div class="ans">
+<pre><code>Client            Server
+  | ---- SYN (seq=x) ----> |   ①客户端进入 SYN_SENT
+  | <-- SYN+ACK (seq=y, --> |   ②服务器进入 SYN_RCVD
+  |        ack=x+1)        |
+  | ---- ACK (ack=y+1) --> |   ③双方 ESTABLISHED</code></pre>
+<p><b>为什么三次</b>：核心是<b>双方都要确认"我的发送和接收能力都正常"</b>。两次握手时，服务端无法确认自己发出的 SYN 被收到；且历史重复的 SYN（旧连接的迟到报文）会让服务端单方面建立连接、白耗资源——经典"陈旧连接请求"问题。</p>
+<p><b>四次挥手中 TIME_WAIT 为什么等 2MSL</b>：① 确保最后一个 ACK 能到达对方（丢了对方会重传 FIN，我还能再回 ACK）；② 让本连接的旧报文在网络中自然消亡，避免污染新连接。TIME_WAIT 在主动关闭方，持续 1~4 分钟，高并发短连接服务器的经典问题（解法：长连接复用、tcp_tw_reuse、负载均衡）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q10</span>TCP 如何保证可靠传输？拥塞控制四阶段？</summary><div class="ans">
+<p><b>可靠性机制</b>：序列号 + 确认应答（累计 ACK）、超时重传（RTO 自适应）、快速重传（3 个冗余 ACK）、滑动窗口流量控制（接收方通告 rwnd）、校验和、按序交付去重。</p>
+<p><b>拥塞控制</b>（针对网络，区别于流量控制针对接收方）：</p>
+<ol>
+<li><b>慢启动</b>：cwnd 从 1 MSS 起，每 RTT 翻倍（指数增长）到 ssthresh</li>
+<li><b>拥塞避免</b>：超过 ssthresh 后每 RTT +1 MSS（线性，AIMD）</li>
+<li><b>拥塞发生</b>：超时 → ssthresh = cwnd/2，cwnd 重置为 1，重新慢启动（剧烈）；3 个冗余 ACK → 快速恢复：cwnd 减半后线性增长（温和）</li>
+<li><b>快速恢复</b>：配合快速重传的过渡状态</li>
+</ol>
+<p>现代默认 <b>CUBIC</b>（Linux），Google 的 <b>BBR</b> 改为主动测量带宽和 RTT、不依赖丢包信号，长肥管道（高带宽高延迟）下吞吐显著更好——大模型推理服务的流式输出也受益于此。</p>
+</div></details>
+
+<details><summary><span class="qno">Q11</span>HTTP 1.1 / 2 / 3 的演进？HTTPS 握手过程？</summary><div class="ans">
+<ul>
+<li><b>HTTP/1.1</b>：长连接（keep-alive）、管道化（但队头阻塞）、Host 头支持虚拟主机、Chunked 分块传输</li>
+<li><b>HTTP/2</b>：二进制分帧、多路复用（一个 TCP 连接上并发多个流，解决 HTTP 层队头阻塞，但 TCP 层丢包仍会阻塞所有流）、头部压缩 HPACK、服务器推送</li>
+<li><b>HTTP/3</b>：底层换成 <b>QUIC（UDP）</b>——流之间真正独立（丢包只影响所在流）、0-RTT 建连、连接迁移（用 Connection ID 而非四元组，WiFi 切 4G 不断连）</li>
+</ul>
+<p><b>HTTPS（TLS 1.2 RSA 握手）要点</b>：① ClientHello（支持的密码套件、随机数）② ServerHello + <b>证书</b>（含公钥）③ 客户端验证证书链（CA 签名、域名、有效期）→ 生成预主密钥用服务器公钥加密发送 ④ 双方基于三个随机数派生会话密钥 ⑤ 之后对称加密通信。<b>非对称只用于交换密钥，数据传输用对称</b>（性能）。TLS 1.3 握手减为 1-RTT，且删掉了不安全套件。</p>
+</div></details>
+
+<details><summary><span class="qno">Q12</span>从输入 URL 到页面展示，中间发生了什么？（经典串讲题）</summary><div class="ans">
+<ol>
+<li><b>DNS 解析</b>：浏览器缓存 → 系统缓存 hosts → 本地 DNS（递归）→ 根/顶级/权威（迭代），拿到 IP</li>
+<li><b>TCP 三次握手</b>（HTTPS 再加 TLS 握手）</li>
+<li><b>发送 HTTP 请求</b>：应用层构造请求 → 传输层分段 → 网络层 IP 路由（ARP 找下一跳 MAC）→ 链路层帧 → 经过 NAT、路由器转发</li>
+<li><b>服务器侧</b>：负载均衡（LVS/Nginx）→ 应用服务器（可能查 Redis 缓存、读数据库、RPC 调下游）→ 返回响应</li>
+<li><b>浏览器渲染</b>：解析 HTML 建 DOM 树、CSS 建 CSSOM、合成渲染树 → 布局（reflow）→ 绘制（repaint）→ 合成层上屏；期间 JS 可能阻塞解析（defer/async）</li>
+<li><b>连接复用或关闭</b>（keep-alive / 四次挥手）</li>
+</ol>
+<p>这题是"知识串联题"：面试官可以任意一层往下钻（DNS 用 UDP 还是 TCP？ARP 是什么？为什么 reflow 比 repaint 贵？），每一环都要能展开。</p>
+</div></details>
+
+<h3 id="sec1-3">1.3 数据库与缓存</h3>
+<details><summary><span class="qno">Q13</span>MySQL 为什么用 B+ 树做索引？和 B 树 / 哈希 / 红黑树对比？</summary><div class="ans">
+<ul>
+<li><b>vs B 树</b>：B+ 树非叶子节点不存数据只存键 → 单页能放更多键 → 树更矮（3~4 层支撑千万级数据）→ 磁盘 IO 次数更少；叶子节点用链表串联 → 范围查询/排序顺着链表扫即可，B 树要中序回溯</li>
+<li><b>vs 哈希</b>：哈希等值查询 O(1) 但不支持范围查询和排序，无法用最左前缀；Memory 引擎支持哈希索引</li>
+<li><b>vs 红黑树/AVL</b>：二叉树太高（log₂(10⁷)≈23 次节点访问 ≈ 23 次磁盘 IO），B+ 树一个节点一页（16KB），一次 IO 拿一整页</li>
+</ul>
+<p><b>聚簇 vs 二级索引</b>：聚簇索引叶子存整行数据（InnoDB 主键即聚簇）；二级索引叶子存主键值 → 查非索引列需<b>回表</b>；覆盖索引（查询列都在索引里）可免回表——EXPLAIN 里 Extra 出现 Using index 即覆盖。</p>
+<p><b>最左前缀原则</b>：联合索引 (a,b,c) 只能命中以 a 开头的查询；WHERE b=x 用不上该索引。索引列参与函数/隐式类型转换/前导 % LIKE 会导致索引失效。</p>
+</div></details>
+
+<details><summary><span class="qno">Q14</span>事务 ACID 与隔离级别？MVCC 怎么工作？</summary><div class="ans">
+<p><b>ACID</b>：原子性（undo log 回滚）、一致性（目的）、隔离性（锁+MVCC）、持久性（redo log）。</p>
+<p><b>并发问题与隔离级别</b>：</p>
+<table>
+<tr><th>隔离级别</th><th>脏读</th><th>不可重复读</th><th>幻读</th></tr>
+<tr><td>读未提交 RU</td><td>✔会发生</td><td>✔</td><td>✔</td></tr>
+<tr><td>读已提交 RC</td><td>✘</td><td>✔</td><td>✔</td></tr>
+<tr><td>可重复读 RR（InnoDB 默认）</td><td>✘</td><td>✘</td><td>基本避免（间隙锁）</td></tr>
+<tr><td>串行化</td><td>✘</td><td>✘</td><td>✘</td></tr>
+</table>
+<p><b>MVCC</b>：每行隐藏字段 <code>trx_id</code>（最后修改事务）+ <code>roll_pointer</code>（指向 undo log 旧版本，构成版本链）。读时生成 <b>ReadView</b>（活跃事务列表），判断版本链上哪个版本对自己可见：RC 每次查询生成新 ReadView（所以能看到别人已提交的最新数据），RR 只在第一次查询生成（所以可重复读）。<b>普通 select 是快照读不加锁，update/insert/delete 是当前读</b>，当前读用行锁+间隙锁（Next-Key Lock）防幻读。</p>
+</div></details>
+
+<details><summary><span class="qno">Q15</span>Redis 为什么快？缓存穿透 / 击穿 / 雪崩？</summary><div class="ans">
+<p><b>快的原因</b>：纯内存 + 单线程命令执行（无锁无上下文切换，IO 多路复用 epoll 串行处理）+ 高效数据结构（SDS 动态字符串、跳表 zset、压缩列表 listpack、渐进式 rehash 的字典）。6.0 引入多线程只用于网络 IO 读写，命令执行仍是单线程。</p>
+<ul>
+<li><b>穿透</b>（查不存在的 key 打到 DB）：布隆过滤器前置拦截 / 缓存空值（短 TTL）</li>
+<li><b>击穿</b>（热 key 过期瞬间大量请求压 DB）：互斥锁重建（只放一个线程回源）/ 热点 key 永不过期+异步更新</li>
+<li><b>雪崩</b>（大量 key 同时过期或 Redis 宕机）：TTL 加随机抖动 / 多级缓存 / 集群高可用 / 限流降级兜底</li>
+</ul>
+<p><b>追问</b>：缓存一致性怎么保证？——主流方案 Cache Aside（读：先读缓存 miss 再读 DB 回填；写：<b>先更新 DB 再删缓存</b>），配合延迟双删或订阅 binlog（Canal）异步删缓存，追求最终一致。</p>
+</div></details>
+
+<h3 id="sec1-4">1.4 数据结构与算法</h3>
+<details><summary><span class="qno">Q16</span>各数据结构的复杂度与选型（一张表说清）</summary><div class="ans">
+<table>
+<tr><th>结构</th><th>查找</th><th>插入/删除</th><th>备注</th></tr>
+<tr><td>数组（有序）</td><td>O(log n) 二分</td><td>O(n) 移位</td><td>缓存友好，随机访问 O(1)</td></tr>
+<tr><td>链表</td><td>O(n)</td><td>O(1)（已知位置）</td><td>list 迭代器 splice/erase 不失效（LRU 基础）</td></tr>
+<tr><td>哈希表</td><td>均摊 O(1)</td><td>均摊 O(1)</td><td>无序；冲突处理链地址/开放寻址；最坏 O(n)</td></tr>
+<tr><td>二叉搜索树（平衡）</td><td>O(log n)</td><td>O(log n)</td><td>有序遍历、范围查询；红黑树实现简单，AVL 查询更快</td></tr>
+<tr><td>堆</td><td>堆顶 O(1)</td><td>O(log n)</td><td>Top-K、优先队列、堆排序；建堆 O(n)</td></tr>
+<tr><td>跳表</td><td>O(log n)</td><td>O(log n)</td><td>Redis zset；范围查询天然支持，实现比红黑树简单</td></tr>
+<tr><td>Trie</td><td>O(L)</td><td>O(L)</td><td>前缀匹配、敏感词、自动补全</td></tr>
+</table>
+<p><b>哈希冲突解决</b>：链地址法（删除方便、装填因子可 &gt;1）vs 开放寻址（线性探测有聚集问题、缓存更友好；布隆过滤器是它的近似应用）。</p>
+<p><b>堆必背</b>：① 建堆 O(n)（自底向上下沉，不是逐个插入的 O(n log n)）② Top-K 用 K 容量小顶堆（求第 K 大）③ 堆只保证堆顶最值，不保证整体有序。</p>
+</div></details>
+
+<details><summary><span class="qno">Q17</span>排序算法总结与稳定性、工程取舍</summary><div class="ans">
+<table>
+<tr><th>算法</th><th>平均</th><th>最坏</th><th>空间</th><th>稳定</th></tr>
+<tr><td>快排</td><td>O(n log n)</td><td>O(n²)（已有序+固定pivot）</td><td>O(log n)</td><td>不稳定</td></tr>
+<tr><td>归并</td><td>O(n log n)</td><td>O(n log n)</td><td>O(n)</td><td>稳定</td></tr>
+<tr><td>堆排</td><td>O(n log n)</td><td>O(n log n)</td><td>O(1)</td><td>不稳定</td></tr>
+<tr><td>快排非递归/随机化</td><td>期望 O(n log n)</td><td>随机化后最坏概率极低</td><td>—</td><td>—</td></tr>
+</table>
+<ul>
+<li><b>快排为什么实践中最快</b>：内循环紧凑（比较+交换）、缓存局部性好、分区后数据连续</li>
+<li><b>为什么 std::sort 是 introsort</b>：快排 + 递归过深切堆排 +小区间切插入排序，兼顾最坏 O(n log n) 与实际速度</li>
+<li><b>稳定性</b>的意义：多关键字排序（先按 A 稳定排序再按 B）依赖前一关键字次序不被破坏；如成绩排序后按班级再排</li>
+<li><b>外部排序</b>：大文件归并（多路归并 + 败者树 + 置换选择造初始归并段）</li>
+<li><b>非比较排序</b>：计数/基数/桶排序，O(n+k)，突破比较排序 O(n log n) 下界，但有数据范围假设</li>
+</ul>
+</div></details>
+</section>
+
+<!-- ================= 二、机器学习基础 ================= -->
+<section id="sec2">
+<h2>二、机器学习基础</h2>
+
+<h3 id="sec2-1">2.1 基础概念</h3>
+<details><summary><span class="qno">Q18</span>偏差与方差？欠拟合与过拟合的对策？</summary><div class="ans">
+<p><b>偏差</b>：模型假设太简单导致的系统性误差（打靶整体偏移靶心）；<b>方差</b>：模型对训练数据扰动太敏感（换一批数据模型大变）。模型复杂度 ↑ → 偏差 ↓ 方差 ↑，总误差呈 U 型。<b>噪声</b>是数据本身的不可约误差。</p>
+<ul>
+<li><b>欠拟合（高偏差）对策</b>：加特征、加模型复杂度（升阶/加深）、减小正则、训练更久</li>
+<li><b>过拟合（高方差）对策</b>：① 更多数据 / 数据增强 ② 正则化（L1/L2/dropout）③ 早停 ④ 降复杂度（剪枝/减层）⑤ 集成（bagging 降方差）⑥ 交叉验证选模型</li>
+</ul>
+<p><b>K 折交叉验证</b>：K-1 份训练 1 份验证轮转，K 次均值更稳；数据少时用留一法（LOOCV）；类别不平衡要<b>分层抽样</b>保持每折分布一致。<b>注意数据泄漏</b>：归一化统计量、特征选择都必须只在训练折上算。</p>
+</div></details>
+
+<details><summary><span class="qno">Q19</span>L1 和 L2 正则的区别？为什么 L1 能产生稀疏解？</summary><div class="ans">
+<p><b>L1（|w|₁，拉普拉斯先验）</b>倾向于把不重要的权重压成精确的 0 → 特征选择；<b>L2（|w|²₂，高斯先验）</b>让权重整体变小但不为 0 → 缓解共线性、更平滑。</p>
+<p><b>几何解释</b>：L1 约束区域是菱形，其尖角（顶点在坐标轴上）更容易与损失等高线相切 → 切点落在坐标轴上 → 某些权重恰好为 0；L2 是圆，光滑无角，切点一般不在轴上。</p>
+<p><b>求导视角</b>：L1 的梯度是 ±λ（常数拉力），权重很小时也能被拉到 0；L2 梯度正比于 w（λw），w→0 时拉力也→0，永远拉不到精确 0。</p>
+<p><b>注意</b>：λ 需要调（交叉验证）；先标准化特征再正则，否则尺度大的特征被不公平惩罚。</p>
+</div></details>
+
+<details><summary><span class="qno">Q20</span>逻辑回归为什么要用交叉熵而不是 MSE？</summary><div class="ans">
+<p>两个原因：</p>
+<ol>
+<li><b>凸性</b>：交叉熵 + sigmoid 组合的损失关于参数是凸的（有全局最优）；MSE + sigmoid 是非凸的（存在局部极小）</li>
+<li><b>梯度健康</b>：交叉熵的梯度为 <code>σ(z) − y</code>，预测错得越离谱梯度越大、修正越猛；MSE 的梯度带 σ'(z) 项，sigmoid 饱和区 σ'≈0 → 预测极端错误时梯度反而趋近 0，学习停滞</li>
+</ol>
+<p><b>追问链</b>：LR 为什么叫"回归"（本质是线性回归套 sigmoid 做概率映射）；LR 输出的是校准概率吗（是，若模型假设正确，Platt scaling 视角）；多分类用 softmax + 交叉熵，softmax 是 sigmoid 的多类推广。</p>
+</div></details>
+
+<h3 id="sec2-2">2.2 经典模型</h3>
+<details><summary><span class="qno">Q21</span>决策树：ID3 / C4.5 / CART 的分裂准则与剪枝</summary><div class="ans">
+<ul>
+<li><b>ID3</b>：信息增益 = H(父) − H(子)。缺陷：偏好取值多的特征（极端例子：把"样本 ID"当特征增益最大）</li>
+<li><b>C4.5</b>：信息增益比（除以特征自身熵），惩罚多值特征；支持连续特征（二分点扫描）、缺失值</li>
+<li><b>CART</b>：分类用<b>基尼指数</b>（=1−Σp²，二阶泰勒近似信息熵，计算更快），回归用<b>平方误差最小化</b>；严格二叉树</li>
+</ul>
+<p><b>剪枝</b>：预剪枝（max_depth / min_samples_split / min_impurity_decrease，可能欠拟合）vs 后剪枝（代价复杂度剪枝 CCP：α·叶数 + 误差 的权衡，更准但更贵）。</p>
+<p>单棵树高方差、不稳定 → <b>随机森林</b>（bagging + 随机特征子集）降方差；→ <b>GBDT</b>（boosting 串行拟合负梯度）降偏差。</p>
+</div></details>
+
+<details><summary><span class="qno">Q22</span>GBDT / XGBoost / LightGBM 的演进与高频追问</summary><div class="ans">
+<p><b>GBDT</b>：每轮拟合损失函数的<b>负梯度</b>（回归问题即残差），新树输出累加进模型；lr（步长）收缩 + 子采样控制过拟合。</p>
+<ul>
+<li><b>XGBoost 的改进</b>：① 目标函数二阶泰勒展开（用一阶+二阶梯度），支持任意二阶可导损失 ② 正则项 Ω = γ·叶数 + ½λ||w||² 直接进目标，推导出最优叶权值和分裂增益公式（gain = ½[G²/(H+λ) + G²/(H+λ) − (G+H)²/(G_L+H_L+λ)] 形态）③ 工程上列块存储支持特征并行、缓存感知、直方图近似分裂点</li>
+<li><b>LightGBM 的改进</b>：① <b>直方图算法</b>（连续特征分桶，从"排序扫描"变"桶统计"）② <b>Leaf-wise 生长</b>（每次分裂增益最大的叶，更深更准但可能过拟合，需 max_depth 限制；XGB 是 Level-wise）③ <b>GOSS 梯度单边采样</b>（大梯度样本全保留、小梯度采样放大）④ <b>EFB 互斥特征捆绑</b>（稀疏特征合并降维）⑤ 原生支持类别特征</li>
+</ul>
+<p><b>高频追问</b>：XGB 怎么处理缺失值（默认方向学习：分裂时尝试把缺失样本划到左右两侧看增益）；GBDT 为什么用回归树做分类（拟合对数几率，再 sigmoid）；boosting 主要降偏差、bagging 主要降方差。</p>
+</div></details>
+
+<details><summary><span class="qno">Q23</span>SVM 核心思想与核技巧</summary><div class="ans">
+<p><b>硬间隔</b>：最大化离超平面最近样本的间隔（margin = 2/||w||），等价于最小化 ½||w||²。KKT 条件导出<b>支持向量</b>（只有离边界样本决定模型）。</p>
+<p><b>软间隔</b>：引入松弛变量 ξ 与惩罚 C，容忍不可分样本。C 大 → 惩罚违规重 → 间隔窄易过拟合。</p>
+<p><b>核技巧</b>：对偶问题中样本只以内积 ⟨xᵢ,xⱼ⟩ 出现 → 用核函数 K 在低维空间隐式计算高维内积，无需显式升维。常用：线性核（高维稀疏文本首选）、RBF/高斯核（σ 太小过拟合）、多项式核。判定是不是合法核：Mercer 条件（核矩阵半正定）。</p>
+<p><b>对比 LR</b>：LR 损失凸、概率输出、依赖全部样本；SVM 间隔最大化、稀疏解（支持向量）、决策只依赖边界样本。</p>
+</div></details>
+
+<h3 id="sec2-3">2.3 优化与评估</h3>
+<details><summary><span class="qno">Q24</span>SGD / Momentum / Adam 家族？学习率调度？</summary><div class="ans">
+<ul>
+<li><b>SGD</b>：单/小批量估计梯度。噪声大但泛化常更好；收敛慢、易在峡谷震荡</li>
+<li><b>Momentum</b>：v = βv − lr·g，累积历史方向穿越峡谷、抑制震荡；NAG 先按动量走半步再校正</li>
+<li><b>AdaGrad/RMSProp</b>：按参数自适应缩放学习率（除以梯度平方的滑动平均），稀疏特征友好</li>
+<li><b>Adam</b> = Momentum + RMSProp + 偏差修正。默认首选（β₁=0.9, β₂=0.999）；但泛化高峰常不如精调 SGD（大模型训练多用 AdamW——解耦权重衰减，L2 正则≠权重衰减在自适应优化器中不等价）</li>
+</ul>
+<p><b>调度</b>：warmup（初期大梯度不稳定，线性升温）→ 余弦退火 / 阶梯衰减 / 逆时间衰减。<b>大模型标配</b>：warmup + cosine + AdamW。</p>
+</div></details>
+
+<details><summary><span class="qno">Q25</span>AUC 的物理意义？与 PR 曲线怎么选？类别不平衡怎么办？</summary><div class="ans">
+<p><b>AUC = 随机取一正一负样本，正样本分数更高的概率</b>（与阈值无关，衡量排序质量——这正是推荐系统的核心诉求）。</p>
+<ul>
+<li>计算：rank 法 AUC = (Σ rank(正) − n₊(n₊+1)/2) / (n₊n₋)</li>
+<li>不平衡时 ROC-AUC 可能虚高（负样本基数大，FPR 分母大）；<b>PR 曲线更敏感</b>（precision 直接反映正类预测纯度），搜索/推荐等正例稀疏场景看 AUC 同时也要看 PR</li>
+</ul>
+<p><b>类别不平衡对策</b>：① 重采样（过采样小心过拟合——SMOTE 插值生成；欠采样丢信息）② 类权重/损失加权（focal loss：降低易分样本权重，聚焦难样本）③ 换指标（recall@k、MRR、PR-AUC）④ 阈值调整。注意：<b>不要</b>在采样后的数据上评估（评估必须还原真实分布）。</p>
+<p><b>GAUC</b>：按用户分组算 AUC 再按曝光加权平均——消除用户间分数不可比的影响，推荐场景比全局 AUC 更贴近线上。</p>
+</div></details>
+</section>
+
+<!-- ================= 三、深度学习基础 ================= -->
+<section id="sec3">
+<h2>三、深度学习基础</h2>
+
+<h3 id="sec3-1">3.1 训练机制</h3>
+<details><summary><span class="qno">Q26</span>反向传播的原理？链式法则如何在一层中复用？</summary><div class="ans">
+<p>前向计算损失，反向沿计算图<b>从输出向输入逐层传递梯度</b>，用链式法则 ∂L/∂x = ∂L/∂y · ∂y/∂x。<b>动态规划思想</b>：中间结果（如 sigmoid 输出、矩阵乘的输入）在前向时缓存，反向复用，避免重复递归计算——这就是框架建计算图 + 自动微分的本质。</p>
+<p><b>计算示例（矩阵层）</b>：Y = XW，∂L/∂W = Xᵀ·∂L/∂Y，∂L/∂X = ∂L/∂Y·Wᵀ。维度检查技巧：梯度形状必与参数形状一致，可用 shape 推导快速验证。</p>
+<p><b>高频追问</b>：为什么深度网络梯度会消失/爆炸（连乘 &lt;1 或 &gt;1 的雅可比）；残差连接为什么能缓解（恒等映射使梯度直通：∂L/∂x = ∂L/∂y·(1 + ∂F/∂x)，恒等项保证至少 1）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q27</span>梯度消失/爆炸的原因与全套对策</summary><div class="ans">
+<p><b>原因</b>：反向传播是逐层雅可比矩阵连乘；Sigmoid 导数最大 0.25、初始化不当（方差不守恒）等使连乘指数级衰减/放大。RNN 尤其严重（时间维展开等价于极深网络）。</p>
+<ul>
+<li><b>激活函数</b>：换 ReLU 族（正区间导数恒 1）</li>
+<li><b>初始化</b>：Xavier（tanh/sigmoid，方差 2/(fan_in+fan_out)）/ He（ReLU，方差 2/fan_in）——保证各层激活和梯度方差稳定</li>
+<li><b>结构</b>：残差连接（ResNet）、LSTM 门控（细胞状态加性更新，梯度高速公路）</li>
+<li><b>归一化</b>：BN/LN 平滑损失面、允许更大学习率</li>
+<li><b>爆炸专项</b>：梯度裁剪（按范数 rescale，clip norm / clip value）——RNN/Transformer 训练标配</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q28</span>BatchNorm 原理？训练和推理行为为什么不同？为什么有效？</summary><div class="ans">
+<p><b>前向</b>：对每个特征通道，用 batch 内统计量归一化 x̂ = (x−μ_B)/√(σ²_B+ε)，再仿射 y = γ·x̂ + β（γ、β 可学习，恢复表达能力）。</p>
+<p><b>训练/推理差异</b>：训练用当前 batch 统计量（所以依赖 batch size、不能逐样本）；<b>推理用训练期统计量的滑动平均</b>（running mean/var）——与 batch 无关，部署确定性行为。</p>
+<p><b>为什么有效</b>：① 缓解内部协变量偏移（ICS，原始论文说法，后续研究认为不完整）② 更主流的解释：<b>平滑损失曲面</b>、允许更大学习率 ③ 带来轻微正则效果（batch 统计量的噪声）。依赖 batch → batch 太小统计量噪声大 → 小 batch / 序列长度可变场景（NLP）用 LayerNorm。</p>
+<p><b>LN vs BN</b>：LN 对<b>单样本所有特征维</b>归一化（与 batch 无关）——Transformer 标配；RMSNorm 是 LN 的简化（除以 RMS，不减均值），LLaMA 等主流 LLM 采用。</p>
+</div></details>
+
+<details><summary><span class="qno">Q29</span>激活函数演进：Sigmoid → ReLU → GELU / SwiGLU</summary><div class="ans">
+<ul>
+<li><b>Sigmoid/Tanh</b>：饱和 → 梯度消失；输出非零中心；计算含 exp 较贵。现只用于门控和输出概率层</li>
+<li><b>ReLU</b>：不饱和（正区）、稀疏激活、计算廉价；死区问题（负区梯度 0，大 lr 下神经元永久死亡）→ Leaky ReLU / PReLU</li>
+<li><b>GELU</b>：x·Φ(x)，用标准正态 CDF 对输入做概率门控，平滑版 ReLU；BERT/GPT 系列 FFN 激活。直觉：输入越大越可能被"保留"</li>
+<li><b>SwiGLU</b>：Swish(xW₁) ⊗ xW₂，门控线性单元——FFN 变三矩阵 (W₁,W₃ 升维、W₂ 降维)，LLaMA/Mistral 等现代 LLM 标配，表达能力更强</li>
+</ul>
+<p><b>追问</b>：为什么激活函数需要非线性（否则多层网络等价于单层线性变换）；输出层为什么一般不接激活（回归）或接 softmax（多分类）。</p>
+</div></details>
+
+<h3 id="sec3-2">3.2 结构与组件</h3>
+<details><summary><span class="qno">Q30</span>CNN 核心概念：卷积、感受野、池化、1×1 卷积</summary><div class="ans">
+<ul>
+<li><b>卷积</b>：参数共享（同一核滑全图）+ 局部连接 → 平移等变、参数量骤减；输出尺寸 = (W − K + 2P)/S + 1</li>
+<li><b>感受野</b>：某层一个像素映射回输入的区域大小；堆叠 3×3 卷积比单个大核更优（两层 3×3 感受野 5×5，参数 18W² vs 25W²，且多一次非线性）——VGG 的核心结论</li>
+<li><b>池化</b>：下采样获得平移不变性、扩大感受野、降计算；MaxPool 保纹理、AvgPool 保整体。现代网络常用 stride=2 卷积替代</li>
+<li><b>1×1 卷积</b>：跨通道线性组合（升/降维）、Network-in-Network；Inception/ResNet 的瓶颈层（bottleneck）靠它压通道数降 FLOPs</li>
+<li><b>经典架构一句话</b>：LeNet 开山 → AlexNet ReLU+Dropout+GPU → VGG 深度堆叠 → GoogLeNet 多尺度 → ResNet 残差（152 层的根基）→ 之后 ConvNeXt 用 Transformer 配方改造 CNN</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q31</span>RNN / LSTM / GRU：门控为什么能解决长依赖？</summary><div class="ans">
+<p><b>Vanilla RNN</b>：hₜ = tanh(Wₓxₜ + Wₕhₜ₋₁)。时间展开后梯度连乘 Wₕ 的幂 → 谱半径 &lt;1 消失、&gt;1 爆炸。</p>
+<p><b>LSTM 三门</b>：</p>
+<pre><code>遗忘门 f = σ(Wf·[h,x])        决定细胞状态保留多少旧信息
+输入门 i = σ(Wi·[h,x])        决定写入多少新信息
+输出门 o = σ(Wo·[h,x])        决定细胞状态输出多少到 h
+Cₜ = f⊙Cₜ₋₁ + i⊙C̃ₜ          细胞状态：加性更新（梯度高速公路）
+hₜ = o⊙tanh(Cₜ)</code></pre>
+<p><b>关键</b>：C 的更新是<b>逐元素加法</b>而非矩阵乘法连乘，梯度沿加法路径直通 → 缓解长程梯度衰减。<b>GRU</b> 简化为两门（更新门 z 融合遗忘+输入、重置门 r），参数少 1/4，效果相当。<b>为什么 Transformer 取代 RNN</b>：串行依赖无法并行训练（O(n) 时间步 vs attention 一层并行）、长距离信息要逐步传递（attention 任意两位置直连 O(1) 路径）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q32</span>Attention 机制：公式、复杂度、变体</summary><div class="ans">
+<pre><code>Attention(Q,K,V) = softmax(QKᵀ/√dₖ)·V</code></pre>
+<ul>
+<li><b>√dₖ 缩放的原因</b>：QK 内积方差 ~ dₖ（假设 q、k 各维独立零均值单位方差），不除则 logits 方差大 → softmax 进入饱和区 → 梯度极小</li>
+<li><b>复杂度</b>：时间 O(n²·d)、空间 O(n²)（注意矩阵）——序列长度的平方是 LLM 长上下文的根本瓶颈</li>
+<li><b>自注意力 vs 交叉注意力</b>：Q、K、V 同源（decoder）vs Q 来自解码器、K/V 来自编码器（翻译模型）</li>
+<li><b>因果掩码</b>：上三角置 −∞，softmax 后为 0，保证自回归生成不偷看未来</li>
+<li><b>效率变体</b>：稀疏注意力（Longformer 滑窗+全局）、线性注意力（核方法近似 softmax）、FlashAttention（不改数学、IO 感知分块计算省显存带宽——训练加速标配）</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q33</span>Dropout 为什么训练随机丢弃、推理却不丢？</summary><div class="ans">
+<p><b>训练</b>：每个神经元以 p 概率失活（前向 mask + 反向梯度同步 mask）→ 等价于训练指数级多子网络的集成 → 降方差防共适应。</p>
+<p><b>推理</b>：不能随机（要求确定性输出）。两种等价处理：① inverted dropout（主流）：训练时除以 (1−p) 预先缩放，推理直接用 ② 原始版：推理时乘 (1−p)。数学本质是保证神经元输出的<b>期望不变</b>。</p>
+<p>Transformer 中 dropout 用在：注意力权重、FFN 输出、残差相加后；LLM 时代趋势是<b>少用或不用</b> dropout（数据量足够大时正则需求低，如 LLaMA 全程不用）。</p>
+</div></details>
+</section>
+
+<!-- ================= 四、大模型（LLM） ================= -->
+<section id="sec4">
+<h2>四、大模型（LLM）</h2>
+
+<h3 id="sec4-1">4.1 Transformer 架构</h3>
+<details><summary><span class="qno">Q34</span>完整走一遍 Decoder-only Transformer 层：数据流与维度</summary><div class="ans">
+<p>输入 token id (B,L) → embedding 查表 (B,L,d)，加位置信息 → 逐层（以 LLaMA 类为例）：</p>
+<pre><code>x = x + RMSNorm(x)                     # Pre-Norm
+Q,K,V = xWq, xWk, xWv                  # d→d（GQA 时 K,V 头数更少）
+Attn = softmax(QKᵀ/√dₖ + causal_mask)V  # (B,L,L)×(B,L,d)
+x = x + Attn·Wo                        # 残差
+h  = x + SwiGLU-FFN(RMSNorm(x))        # FFN: W₃( Swish(xW₁) ⊙ xW₂ )
+# 下一层重复；最后 RMSNorm + lm_head(d→vocab) → softmax 下一 token 分布</code></pre>
+<ul>
+<li><b>参数量大头</b>：embedding/lm_head（d×V，V≈3~15万）与各层 Wq/k/v/o + FFN 三矩阵。经验比例：FFN 隐层通常 4d（SwiGLU 下约 8/3d 保持参数量）</li>
+<li><b>激活显存为什么是训练的数倍</b>：前向缓存所有中间量供反向，加上优化器状态（AdamW 每参数 2 份 fp32 状态+主副本）。7B 模型 fp16 训练 ≈ 7B×2B(权重) + ×2(梯度) + ×12(优化器+主权重) ≈ 112GB——这就是 ZeRO/LoRA 的动机</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q35</span>为什么除以 √dₖ？为什么要多头？GQA/MQA 又是什么？</summary><div class="ans">
+<p><b>√dₖ 缩放</b>：q·k 是 dₖ 个独立分量之和，方差 ≈ dₖ。dₖ 大（64/128）时 logits 波动大 → softmax 高度 one-hot → 梯度近乎 0。除以 √dₖ 把方差拉回 1。</p>
+<p><b>多头</b>：把 d 维拆成 h 个子空间各自做注意力，不同头可学习不同关系模式（句法/共指/位置偏好），最后拼接恢复维度。类比 CNN 的多通道。</p>
+<p><b>KV 头数削减</b>（推理显存优化主线）：</p>
+<ul>
+<li><b>MQA</b>（Multi-Query）：所有 Q 头共享 1 组 K/V → KV cache 缩小 h 倍，质量掉得多</li>
+<li><b>GQA</b>（Grouped-Query）：Q 头分组共享 K/V（如 32Q:8KV），LLaMA-2/3、Mistral 标配——显存降为 1/4 而质量几乎无损</li>
+</ul>
+<p><b>KV Cache 显存估算</b>：2(K和V) × 层数 × KV头数 × head_dim × 2B(fp16) × batch × seq_len。例：32 层 × 8KV × 128 × 2 × 2B × 8batch × 4k 序列 ≈ 2GB/请求——这就是长上下文贵的原因。</p>
+</div></details>
+
+<details><summary><span class="qno">Q36</span>位置编码：正弦 → 可学习 → RoPE / ALiBi</summary><div class="ans">
+<p>自注意力本身置换不变（打乱 token 顺序结果不变），必须注入位置信息。</p>
+<ul>
+<li><b>正弦编码</b>（原版 Transformer）：固定多频 sin/cos，可外推但效果一般</li>
+<li><b>可学习绝对位置</b>（BERT/GPT-2）：简单有效但<b>不可外推</b>（训练多长就只能多长）</li>
+<li><b>RoPE 旋转位置编码</b>（LLaMA/Qwen/Mistral 标配）：把 q、k 向量视为二维复数对，按位置 m 旋转角度 mθ。巧在 <b>q_m·k_n 只依赖相对位置 m−n</b>（旋转保内积），相对位置信息"免费"获得。外推方法：<b>NTK-aware 缩放</b>（改 θ 基频）、<b>YaRN</b>（配合注意力温度修正）——社区主流的 4k→128k 扩展方案</li>
+<li><b>ALiBi</b>（BLOOM/MPT）：不编码位置，直接给注意力 logits 加线性距离惩罚 −c·|m−n|，外推平滑、实现最简</li>
+</ul>
+<p><b>追问</b>：为什么 RoPE 能外推而可学习绝对编码不能——RoPE 基于连续函数外推插值，绝对编码对没见过的下标无嵌入向量。</p>
+</div></details>
+
+<details><summary><span class="qno">Q37</span>Pre-Norm vs Post-Norm？为什么现代 LLM 全用 Pre-Norm？</summary><div class="ans">
+<p><b>Post-Norm</b>（原版）：x = Norm(x + Sublayer(x))。归一化在残差主路上 → 深层梯度衰减、训练不稳，需要 warmup 精细调参。</p>
+<p><b>Pre-Norm</b>（GPT-2 起）：x = x + Sublayer(Norm(x))。残差主干<b>无阻拦</b>——梯度可以沿恒等路径直通任意层，深层训练显著稳定。代价：理论等效深度略降（各层输入未归一）。</p>
+<p><b>折中</b>：DeepNorm、Sandwich-Norm；LLaMA 用 Pre-RMSNorm（去掉减均值，更快）。<b>一句话</b>：Pre-Norm 用轻微的表达力换取百层网络的可训性，是工程正确选择。</p>
+</div></details>
+
+<h3 id="sec4-2">4.2 预训练与分词</h3>
+<details><summary><span class="qno">Q38</span>BPE 分词原理？词表大小怎么权衡？</summary><div class="ans">
+<p><b>BPE（Byte-Pair Encoding）训练</b>：① 词切分为字符序列并统计频率 ② 反复合并语料中最高频的相邻对为新 token，直到词表达到目标大小。<b>子词</b>兼顾了 OOV（任何词都能拆成子词/字节）与序列长度（常见词整体成 token）。</p>
+<ul>
+<li><b>变体</b>：WordPiece（BERT，合并准则似然增量）、SentencePiece（语言无关，直接原始文本+空格建模）、Byte-level BPE（GPT 系列，彻底无未知字符）</li>
+<li><b>词表大小权衡</b>：大词表（如 15 万）→ 序列更短（中文友好、上下文装更多）但 embedding/lm_head 参数巨大且稀有 token 训练不足；小词表（3.2 万）→ 序列更长但参数省。多语言/中文模型普遍加大词表</li>
+<li><b>为什么影响成本</b>：中文在英文中心词表下可能 1 字 2~3 token，同样内容 token 数翻倍 → 上下文和推理费用都翻倍</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q39</span>预训练目标：CLM vs MLM？Scaling Law 与数据配比</summary><div class="ans">
+<ul>
+<li><b>CLM（因果语言建模）</b>：自回归预测下一 token，GPT 系/所有现代 LLM。与生成天然一致、可无限堆积无标注文本；训练时每个位置都有监督信号（teacher forcing）</li>
+<li><b>MLM（掩码语言建模）</b>：BERT，随机 mask 15% 预测。双向上下文理解强，但预训练-生成任务不匹配（只预测被 mask 位置，信号稀疏），生成式时代淘汰为主流编码器 Backbone 仍用于 BERT 类检索/分类</li>
+</ul>
+<p><b>Scaling Law（Chinchilla）</b>：给定算力预算，模型参数 N 与训练 token 数 D 应等比例增长（约 D ≈ 20N 达到计算最优）。推论：GPT-3 类"大模型欠训练"不如稍小模型喂更多数据。<b>当代实践（Llama-3）</b>：远超 Chinchilla（重复数据多轮训练），因为推理成本主导——一次性多训练换终身部署便宜。</p>
+<p><b>数据工程</b>（预训练质量决定上限）：去重（MinHash）、质量分类器过滤、毒性过滤、代码/数学数据显著提升推理能力、多语言配比。DeepSeek/R1 证明了高质量数据 + RL 范式的威力。</p>
+</div></details>
+
+<details><summary><span class="qno">Q40</span>MoE 混合专家：原理与关键设计</summary><div class="ans">
+<p><b>结构</b>：FFN 替换为 N 个专家 FFN + 路由器（gate）。每个 token 由路由器打分，选 Top-K 个专家（K=1~2）计算加权和输出。<b>稀疏激活</b>：总参数量大（如 671B）但每 token 只激活一小部分（如 37B）——"大容量、低算力"。</p>
+<ul>
+<li><b>负载均衡</b>：路由容易坍缩（都涌向少数专家）→ 辅助负载均衡损失（对路由分布加惩罚）</li>
+<li><b>容量因子</b>：每专家 token 上限，超限丢弃——训练吞吐与质量的权衡</li>
+<li><b>共享专家</b>（DeepSeek-MoE）：1~2 个常驻专家承接通用知识，细粒度专家（拆小）提升专业化</li>
+<li><b>部署特点</b>：显存要装下全部参数（除非 offload），适合高吞吐场景；DeepSeek-V3、Qwen-MoE、Mixtral 都是代表</li>
+</ul>
+</div></details>
+
+<h3 id="sec4-3">4.3 后训练（SFT / RLHF）</h3>
+<details><summary><span class="qno">Q41</span>SFT 的细节：模板、loss mask、数据质量</summary><div class="ans">
+<p><b>训练形式</b>：指令-回复对，仍用 CLM 损失（下一 token 预测），但<b>只对回复部分的 token 计损失</b>（prompt 部分 loss mask 置 0）——学"怎么答"而不是"复述问题"。</p>
+<ul>
+<li><b>对话模板</b>：特殊 token（&lt;|user|&gt;、&lt;|assistant|&gt;）+ 停止符。模板即"接口协议"——训练与推理模板不一致是效果骤降的常见 bug</li>
+<li><b>数据 &gt; 算法</b>：LIMA 论文（1000 条精标数据对齐效果可观）确立"质量优先"；去重、难度分层、多轮混合、拒答样本配比都影响成败</li>
+<li><b>超参</b>：lr 比预训练小 1~2 个量级（1e-5 级），epoch 2~3 防"背答案"</li>
+<li><b>通用 SFT vs 领域 SFT</b>：领域数据晚加、小 lr、混通用数据防能力遗忘（灾难性遗忘的对冲）</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q42</span>RLHF 三阶段：PPO 的完整流程</summary><div class="ans">
+<ol>
+<li><b>SFT</b>：监督微调得到对话基座</li>
+<li><b>奖励模型（RM）训练</b>：同一 prompt 生成多个回复，人工排序 →Bradley-Terry 成对损失 L = −log σ(r(x,y_w) − r(x,y_l))。RM 通常用基座去掉 lm_head 换标量头</li>
+<li><b>PPO 优化</b>：策略 = 当前 LLM。目标 = E[r(x,y)] − β·KL(π‖π_SFT)
+<ul>
+<li>4 个模型在线：actor（训练）、critic（价值）、reward（冻结）、ref（SFT 副本算 KL，防奖励作弊/模式坍缩）</li>
+<li>偏差修正：GAE；KL 惩罚常实现为 ref 模型 logit 差加进 reward</li>
+</ul></li>
+</ol>
+<p><b>PPO 痛点</b>：4 模型并行显存爆炸、训练超参敏感、在线采样慢——催生了 DPO 等离线方法。</p>
+</div></details>
+
+<details><summary><span class="qno">Q43</span>DPO 为什么能绕开奖励模型？GRPO 的创新？</summary><div class="ans">
+<p><b>DPO</b>：数学上可证明"最优策略 = reward + KL 约束"有闭式解，奖励可用策略与 ref 的对数比重写。代回 BT 损失得到直接在策略上的损失：</p>
+<pre><code>L_DPO = −log σ( β·[log π(y_w)/π_ref(y_w) − log π(y_l)/π_ref(y_l)] )</code></pre>
+<p>偏好对直接训 LLM，无 RM、无 PPO 采样循环，稳定省资源。代价：离线（数据分布外退化）、易过拟合偏好对、β 难调。适合资源有限的中等规模对齐。</p>
+<p><b>GRPO</b>（DeepSeekMath/R1）：去掉 critic（价值网络），用<b>组内相对奖励</b>：同一 prompt 采 G 个回复，advantage = (r − mean(group)) / std(group)。配<b>规则奖励</b>（答案对错、格式合规）替代神经 RM——DeepSeek-R1 展示了纯 RL（无 SFT 冷启动的 R1-Zero）能自发涌现长链推理、反思与"顿悟"。<b>衍生趋势</b>：可验证奖励（RLVR）在代码/数学上成为主流。</p>
+</div></details>
+
+<details><summary><span class="qno">Q44</span>什么是涌现能力？CoT 与推理模型？</summary><div class="ans">
+<p><b>涌现</b>：某些能力（多步推理、指令泛化、ICL）在小模型上接近随机，跨过某规模阈值后陡然提升——也伴随争议（是否是度量伪影）。</p>
+<ul>
+<li><b>CoT（思维链）</b>：让模型"一步步想"，把多步推理摊到 token 序列上，缓解单步前向计算的深度限制</li>
+<li><b>推理模型</b>（o1/R1）：RL 训练模型自主生成长 CoT——自我验证、回溯、多路径探索；测试时计算（test-time compute）换准确率：推理预算越长分数越高</li>
+<li><b>与普通 chat 模型的部署差异</b>：输出 token 数多 10~100 倍 → 推理成本与延迟主导；需要更强的 KV cache 与吞吐优化</li>
+</ul>
+</div></details>
+
+<h3 id="sec4-4">4.4 高效微调与推理</h3>
+<details><summary><span class="qno">Q45</span>LoRA 原理：为什么低秩有效？超参怎么选？</summary><div class="ans">
+<p><b>核心假设</b>：微调引起的权重变化 ΔW 是<b>低秩</b>的（任务适配方向集中于少数子空间）。于是 ΔW = BA，B∈R^(d×r), A∈R^(r×k)，只训 r ≪ min(d,k) 的小矩阵：</p>
+<pre><code>h = xW₀ + (α/r)·x·B·A     # W₀ 冻结；A 高斯初始化、B 零初始化（起点=原模型）
+# 约减后仍有 γ 扰动时：h = γxW₀ + xBA   # 更稳定（rsLoRA 等）</code></pre>
+<ul>
+<li><b>训练显存</b>：7B 模型 LoRA r=16 可在单张 24GB 卡训练（全参需百 GB 级）</li>
+<li><b>超参经验</b>：r = 8~64（任务越复杂/数据越大越高）；α 常取 2r 或 r；作用位置：q,v 起步，全线性层（q,k,v,o+FFN）效果更好；学习率比全参高一个量级（1e-4 级）</li>
+<li><b>QLoRA</b>：基座 NF4 量化冻结 + LoRA 训练，单卡 48GB 微调 65B；<b>合并</b>：BA 可在部署时加进 W₀，零额外推理开销</li>
+<li><b>对比其他 PEFT</b>：Prompt/Prefix Tuning 改输入侧（难训、效果弱）；Adapter 加层（有推理延迟）；LoRA 是质量/成本平衡最优解</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q46</span>推理优化全景：KV Cache → 量化 → PagedAttention → 投机解码</summary><div class="ans">
+<p><b>自回归生成的两大阶段</b>：Prefill（并行处理整个 prompt，算力密集，决定首 token 延迟 TTFT）与 Decode（逐 token，每步重算全部 K/V——KV Cache 把历史 K/V 存下来，每步只算新 token 的 QKV，显存带宽密集，决定吞吐 TPOT）。</p>
+<ul>
+<li><b>量化</b>：W8A8（INT8 权重+激活，几乎无损）、W4A16（GPTQ/AWQ 权重量化，显存减 4 倍，速度受限于反量化）；AWQ 按激活分布保护显著权重通道。注意 KV Cache 也可量化（KV INT8/FP8）</li>
+<li><b>连续批处理（continuous batching）</b>：不同请求不同长度动态进出 batch，GPU 利用率数倍提升——vLLM 的核心之一</li>
+<li><b>PagedAttention</b>（vLLM）：KV Cache 分页管理（类似操作系统虚拟内存），消除预留最大长度的碎片，显存利用率 &gt;90%，支持 prefix cache 共享（相同 system prompt 复用 KV）</li>
+<li><b>投机解码</b>：小模型（draft）快速猜 k 个 token，大模型一次并行验证，接受的部分全部白嫖——数学上保证与大模型分布一致；变体：Medusa 多头预测、EAGLE、自投机（复用层）</li>
+<li><b>并行</b>：张量并行 TP（切权重维度，通信大，适合单机多卡 NVLink）、流水线并行 PP（切层，带宽友好）、专家并行 EP（MoE 专用）；serving 层面的数据并行多副本 + 负载均衡</li>
+</ul>
+<p><b>面试常算</b>：给 A100 80GB、7B fp16 模型（14GB 权重），能装多大 batch × 上下文？——预留权重 + 激活，剩余给 KV Cache 按 Q35 公式算。</p>
+</div></details>
+
+<h3 id="sec4-5">4.5 RAG 与评测</h3>
+<details><summary><span class="qno">Q47</span>RAG 完整链路与每一环的优化</summary><div class="ans">
+<p><b>离线</b>：文档解析（PDF/HTML/表格）→ 切块 → 向量化（embedding 模型）→ 向量库；<b>在线</b>：query 改写 → 检索（向量 + BM25 混合）→ 重排（cross-encoder）→ 拼 prompt → 生成（带引用）。</p>
+<ul>
+<li><b>切块</b>：固定大小会切断语义；用标题层级 + 重叠窗口（overlap 10~20%）；表格/代码单独结构化</li>
+<li><b>检索</b>：向量检索语义泛化强、BM25 精确词匹配强 → 混合检索 + RRF 融合；query 改写（HyDE：生成假设答案再检索、多查询扩展）显著提升召回</li>
+<li><b>重排</b>：bi-encoder 召回 top-100 → cross-encoder（query-doc 联合编码）精排 top-5；重排器贵但准</li>
+<li><b>高级</b>：GraphRAG（实体关系图谱 + 多跳检索）、Agentic RAG（检索作为工具由 Agent 决定查什么、查几轮）</li>
+<li><b>评测</b>：检索端 recall@k、MRR；生成端忠实度（faithfulness：答案是否被检索内容支撑）+ 答案相关性（RAGAS 框架）</li>
+</ul>
+<p><b>RAG vs 微调选型</b>：知识频繁更新/需引用溯源 → RAG；改风格/格式/领域语感 → 微调；两者正交可叠加（微调 embedding + 微调生成器）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q48</span>幻觉的成因与缓解？主流评测基准？</summary><div class="ans">
+<p><b>成因</b>：① 训练目标只奖励"像"不奖励"真"（下一 token 概率最大 ≠ 事实正确）② 知识截止/缺失时倾向编造而非承认 ③ 解码随机性（温度）④ 指令遵循压力（用户要答案，模型不倾向拒答）。</p>
+<p><b>缓解</b>：RAG 提供外部证据 + 引用约束；解码降温/约束生成；RLHF 中惩罚编造；评测驱动（幻觉率纳入对齐目标）；系统层面：置信度输出、免责声明、人工审核位。</p>
+<p><b>评测基准速记</b>：</p>
+<table>
+<tr><th>维度</th><th>基准</th></tr>
+<tr><td>综合知识</td><td>MMLU / MMLU-Pro、C-Eval（中文）、CMMLU</td></tr>
+<tr><td>推理</td><td>GSM8K、MATH、GPQA（研究级）、BBH</td></tr>
+<tr><td>代码</td><td>HumanEval、MBPP、LiveCodeBench（防污染）</td></tr>
+<tr><td>指令/对齐</td><td>MT-Bench、AlpacaEval、Arena（人类偏好 ELO）</td></tr>
+<tr><td>长文本</td><td> needle-in-a-haystack（大海捞针）、LongBench</td></tr>
+<tr><td>Agent</td><td>SWE-bench、WebArena、ToolBench、GAIA</td></tr>
+</table>
+<p><b>注意数据污染</b>：基准题泄漏进训练集导致虚高——看 LiveCodeBench/动态新题版更能反映真实水平。</p>
+</div></details>
+</section>
+
+<!-- ================= 五、搜广推 ================= -->
+<section id="sec5">
+<h2>五、搜广推（搜索 / 广告 / 推荐）</h2>
+
+<h3 id="sec5-1">5.1 系统架构</h3>
+<details><summary><span class="qno">Q49</span>推荐系统完整链路：召回 → 粗排 → 精排 → 重排</summary><div class="ans">
+<p>亿级物料不可能全量精排（精排模型一次前向 ~ms 级），所以是漏斗逐层筛：</p>
+<table>
+<tr><th>阶段</th><th>候选量级</th><th>延迟预算</th><th>模型要求</th></tr>
+<tr><td>召回</td><td>百万 → 千</td><td>全并行（向量 ANN）</td><td>快、高召回、多路互补</td></tr>
+<tr><td>粗排</td><td>千 → 百</td><td>~10ms</td><td>轻量（双塔/小 MLP），与精排一致性</td></tr>
+<tr><td>精排</td><td>百 → 几十</td><td>~50ms</td><td>重量级（DIN/多任务），精度优先</td></tr>
+<tr><td>重排</td><td>几十 → 展示</td><td>~10ms</td><td>上下文感知、多样性、业务规则</td></tr>
+</table>
+<ul>
+<li><b>多路召回</b>：向量召回（兴趣）、倒排/标签、热门、协同过滤、关注关系、新品扶持——互补保覆盖</li>
+<li><b>重排的职责</b>：打散同类目、多样性（DPP/滑动窗口）、频控、坑位探索、多目标混排（视频/图文/广告混插——广告是收入的变现位）</li>
+<li><b>为什么不能端到端一个模型</b>：算力约束 + 各层目标不同（召回要"不漏"，精排要"准"，重排要"整体体验"）</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q50</span>搜索、推荐、广告三兄弟的同与不同</summary><div class="ans">
+<ul>
+<li><b>搜索</b>：意图明确（query 是强信号）→ 相关性是硬约束（query-item 匹配）→ 排序 = 相关性 × 质量分；难点：语义匹配（query 短、文档长）、冷 query、生成式搜索（LLM 直接生成答案 + 引用）</li>
+<li><b>推荐</b>：无显式意图 → 从历史行为推断兴趣 → 生态目标（时长/留存/多样性），无相关性硬约束但有惊喜度 vs 安全的权衡</li>
+<li><b>广告</b>：三方博弈（用户/广告主/平台）→ 排序分 ≈ pCTR × pCVR × 出价（eCPM），多了机制设计（GSP 竞价、计费逻辑、预算控制）；校准（calibration）极其重要——pCTR 必须是真实概率，竞价才公平</li>
+</ul>
+<p><b>共通内核</b>：全部依赖 CTR 预估技术栈（特征体系 + 深度排序模型 + 多目标）+ A/B 实验文化，所以算法岗 JD 互通。</p>
+</div></details>
+
+<h3 id="sec5-2">5.2 召回</h3>
+<details><summary><span class="qno">Q51</span>双塔模型（DSSM）：结构、为什么不能交互、负采样</summary><div class="ans">
+<pre><code>user 塔：用户特征（画像+行为序列池化）→ MLP → user_emb (d 维)
+item 塔：item 特征 → MLP → item_emb (d 维)
+训练：logit = cos(u, v)/τ，softmax + 交叉熵（batch 内负例）
+线上：item 塔离线全量算好入库；user 塔在线实时算 → ANN 检索</code></pre>
+<ul>
+<li><b>为什么双塔</b>：item 向量可离线预计算 + ANN 毫秒级检索百万候选。代价是<b>用户和 item 特征在最终内积前不能交互</b>（交互只能各自在塔内）——表达能力受限，这是召回与精排的本质分工</li>
+<li><b>负采样</b>：batch 内其他样本的 item 当负例（方便但流行度有偏，热门 item 被过度当负例）→ 修正：logQ 纠偏 / 流行度降采样；加难负例（同类别、被点击但未转化）提升判别力；in-batch negatives 大 batch 训练是标配</li>
+<li><b>改进</b>：SENet 双塔（动态加权特征）、多兴趣召回（MIND：一个用户多向量）、长序列行为建模</li>
+</ul>
+<p><b>线上 vs 离线不一致问题</b>：离线训练有交叉损失、线上是 ANN 近似检索 + 只取 top——做召回评测要看 recall@k 而非 AUC。</p>
+</div></details>
+
+<details><summary><span class="qno">Q52</span>ANN 向量检索：HNSW / IVF-PQ / Faiss 选型</summary><div class="ans">
+<ul>
+<li><b>暴力检索</b>：精确但 O(N·d)，百万级以下 + GPU 其实能扛（先算这个基线再谈索引）</li>
+<li><b>IVF（倒排文件）</b>：先聚类成 nlist 个簇，查询只扫最近 nprobe 个簇 → 牺牲精度换速度；<b>PQ（乘积量化）</b>：向量切段各自量化成码本，距离用码字近似 → 内存压缩 32~64 倍，有量化误差；IVF-PQ 组合是超大规模（亿级）标配</li>
+<li><b>HNSW（分层小世界图）</b>：上层稀疏图快速跳、下层稠密图精确找。查询快、召回高（99%+），但<b>内存大</b>（要存图 + 全精度向量）、构建慢、删除困难</li>
+<li><b>选型</b>：内存充足追求极致召回 → HNSW；亿级 + 内存受限 → IVF-PQ；工程中间态 → HNSW+PQ 混合（Qdrant/Milvus 都支持）</li>
+</ul>
+<p><b>追问</b>：recall@k 怎么测——用暴力检索结果当 ground truth 对比；ANN 的 recall-延迟曲线是核心指标。</p>
+</div></details>
+
+<h3 id="sec5-3">5.3 排序模型演进</h3>
+<details><summary><span class="qno">Q53</span>CTR 模型演进主线：LR → FM → Wide&Deep → DeepFM → DIN</summary><div class="ans">
+<table>
+<tr><th>模型</th><th>核心贡献</th><th>一句话</th></tr>
+<tr><td>LR + 人工特征</td><td>大规模离散特征工程</td><td>可解释强但靠人工</td></tr>
+<tr><td>FM</td><td>隐向量两两交叉 xᵢ·xⱼ 内积</td><td>自动二阶交叉，稀疏友好 O(kn)</td></tr>
+<tr><td>FFM</td><td>字段感知隐向量</td><td>交叉更细但参数爆炸</td></tr>
+<tr><td>Wide &amp; Deep</td><td>记忆（wide 手工交叉）+ 泛化（deep 嵌入）</td><td>Google 论文，联合训练</td></tr>
+<tr><td>DeepFM</td><td>FM 替代 wide 部分共享 embedding</td><td>免人工交叉，端到端</td></tr>
+<tr><td>DCN / xDeepFM</td><td>显式高阶交叉网络（bit-wise / vector-wise）</td><td>交叉结构化</td></tr>
+<tr><td>DIN</td><td>注意力对用户行为序列建模</td><td>兴趣多样性 + 与候选相关</td></tr>
+<tr><td>DIEN / SIM / BST</td><td>序列建模升级：兴趣演化 GRU / 长序列检索 / Transformer</td><td>行为序列是排序最大信息源</td></tr>
+</table>
+<p><b>DIN 必背</b>：用户历史行为 embedding 按<b>与候选 item 的相关性加权池化</b>（target attention）——候选是泳镜时历史里泳衣权重高、键盘权重低，表达"千人千面 + 一面千兴趣"。<b>面试常问</b>：DIN 的 attention 为什么可以不加 softmax 归一化（保留兴趣强度）。</p>
+<p><b>大模型时代</b>：生成式推荐（把推荐当序列生成，HSTU/行动序列建模）、语义 ID（把 item 离散化成 token 进 LLM）、LLM 做特征/冷启动/可解释性——JD 里"生成式推荐"越来越多，值得准备一页话术。</p>
+</div></details>
+
+<details><summary><span class="qno">Q54</span>多任务学习：ESMM / MMoE / PLE</summary><div class="ans">
+<p>推荐通常同时预估点击、时长、点赞、转化……多任务共用底层。</p>
+<ul>
+<li><b>硬共享</b>：共享底层 + 多头。任务冲突时跷跷板（一升一降）</li>
+<li><b>ESMM</b>：解决<b>CVR 样本选择偏差</b>——CVR 只能观察到"点击后"样本（空间偏差）。pCTCVR = pCTR × pCVR，用全空间曝光样本监督 pCTCVR 和 pCTR，pCVR 作为中间变量被间接学出（无偏）</li>
+<li><b>MMoE</b>：多个专家网络 + 每 task 一个门控（softmax 加权专家输出）——软性分工缓解冲突</li>
+<li><b>PLE</b>：共享专家 + 任务独有专家分离，渐进式路由——解决 MMoE 的负迁移和跷跷板，工业界主流</li>
+</ul>
+<p><b>训练细节</b>：多任务 loss 加权（Uncertainty Weighting 自动学权重 / GradNorm 平衡梯度量级）；离线看各任务 AUC，上线看多目标指标是否跷跷板。</p>
+</div></details>
+
+<h3 id="sec5-4">5.4 多任务与机制</h3>
+<details><summary><span class="qno">Q55</span>特征穿越是什么？怎么防？样本延迟怎么处理？</summary><div class="ans">
+<p><b>特征穿越</b>：训练时用了<b>样本发生时刻之后</b>的信息（如"用户当日总点击数"这个统计特征，包含了本条样本之后的点击）→ 离线 AUC 虚高、上线效果崩。<b>所有统计特征必须按时间点快照（point-in-time）</b>。</p>
+<p><b>穿越高发场景</b>：① 聚合统计特征未按天/小时切分版本 ② 用户画像更新时间晚于请求 ③ 样本回流拼接特征时取了最新表而非当时表。</p>
+<p><b>样本延迟（转化延迟）</b>：广告转化可能在点击后数天才发生 → 负样本其实"还没转化"。方案：<b>DFM（延迟反馈模型）</b>建模转化延迟分布；工程上等待窗口 + 重要性采样校正 / 实时假负 + 后续纠正（ES-DFM/FNC）。</p>
+<p><b>曝光偏差</b>：模型只能看到曝光过的 item 的反馈（未曝光无标签）→ IPS（逆倾向得分）用曝光概率加权纠偏。</p>
+</div></details>
+
+<details><summary><span class="qno">Q56</span>EE 探索与利用：Bandit / UCB / 汤普森采样 / 冷启动</summary><div class="ans">
+<p>纯粹利用（只推模型最有把握的）→ 马太效应、新 item 永无出头日；纯探索毁体验。<b>EE 平衡</b>：</p>
+<ul>
+<li><b>ε-greedy</b>：ε 概率随机探索（简单粗暴）</li>
+<li><b>UCB</b>：score = 均值收益 + c·√(ln N / n_item)——不确定性高的 item 有探索加成（访问少 → 加成大）</li>
+<li><b>汤普森采样</b>：从 Beta 后验采样收益——贝叶斯版 UCB， regrets 理论更优，实现也简单</li>
+<li><b>LinUCB</b>：带特征的 UCB（Yahoo! 新闻经典），新 item 也能凭特征先验探索</li>
+</ul>
+<p><b>冷启动</b>：item 侧——内容特征兜底（embedding 泛化 + 探索流量扶持）；user 侧——注册信息 + 热门 + 兴趣选择引导；系统侧——强化时效性（新 item 快速过模型）+ 小流量池。</p>
+</div></details>
+
+<details><summary><span class="qno">Q57</span>A/B 实验怎么做才可信？</summary><div class="ans">
+<ol>
+<li><b>分流</b>：按 user_id 哈希分桶（同用户永远同组），正交实验层（不同实验互不干扰）</li>
+<li><b>样本量计算</b>：给定基线指标、MDE（最小可检测效应）、显著性 α=0.05、功效 1−β=0.8 → 反推所需流量与时长（至少覆盖完整周期——工作日/周末差异）</li>
+<li><b>显著性检验</b>：比率类 z 检验；注意<b>多重比较</b>问题（看 20 个指标总有一个"显著"——Bonferroni/分层确认）；连续指标看方差与置信区间而不只是均值</li>
+<li><b>辛普森悖论与 AA 实验</b>：先跑 AA 校验分流均匀；分层看指标防聚合掩盖反向</li>
+<li><b>护栏指标</b>（guardrail）：主指标涨但崩溃率/延迟/负反馈涨 → 不能上</li>
+</ol>
+<p><b>高阶</b>：交错实验（interleaving，同一次曝光内混两套排序结果，灵敏度比 A/B 高一个量级）；长期留存效应 vs 短期指标的错位（推荐短期时长涨可能透支生态）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q58</span>推荐系统常用指标体系</summary><div class="ans">
+<ul>
+<li><b>离线模型</b>：AUC / GAUC（用户内排序能力）、LogLoss（校准敏感）、NDCG@k、Recall@k（召回）</li>
+<li><b>在线业务</b>：CTR、时长（总/人均）、留存（次日/7日——终极指标）、互动率（点赞/评论/转发）、多样性（类目熵）、生态指标（创作者发布率/中小作者流量占比）</li>
+<li><b>广告特有</b>：eCPM、ROI（广告主回传）、填充率、CPM/CPC</li>
+<li><b>北极星 vs 过程指标</b>：留存是北极星但实验周期长、灵敏度低；时长/CTR 是灵敏代理但可能被"标题党"优化偏——指标组合 + 护栏是标准做法</li>
+</ul>
+</div></details>
+</section>
+
+<!-- ================= 六、AI Agent ================= -->
+<section id="sec6">
+<h2>六、AI Agent</h2>
+
+<h3 id="sec6-1">6.1 概念与范式</h3>
+<details><summary><span class="qno">Q59</span>Agent 和 Workflow 的区别？Agent 的四个核心组件</summary><div class="ans">
+<p><b>Workflow</b>：代码预先编排好 LLM 调用路径（DAG 固定），模型只在节点里执行；<b>Agent</b>：LLM 自己决定下一步做什么（动态控制流），循环"感知 → 思考 → 行动"直到任务完成。Anthropic 的经典论断：<b>能用 workflow 解决的别上 agent</b>——可控性、成本、延迟都更好；agent 留给路径无法穷举的开放任务。</p>
+<p><b>四组件</b>：</p>
+<ul>
+<li><b>规划（Planning）</b>：任务分解（subgoal）、反思（self-critique）、重规划（replan）</li>
+<li><b>记忆（Memory）</b>：短期（上下文窗口）+ 长期（外部存储/向量库）+ 工作记忆（scratchpad）</li>
+<li><b>工具（Tools）</b>：function calling、代码执行、检索、API——扩展模型的"行动半径"</li>
+<li><b>执行循环（Action Loop）</b>：观察环境反馈 → 更新状态 → 决策下一步；失败重试与终止条件设计</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q60</span>ReAct / Plan-and-Execute / Reflexion 三大范式</summary><div class="ans">
+<pre><code>ReAct 循环：
+Thought: 我需要先查上海明天天气
+Action: search_weather[上海, 明天]
+Observation: 多云 18~24℃
+Thought: 天气适中，推荐户外……
+Answer: ……</code></pre>
+<ul>
+<li><b>ReAct</b>（推理+行动交错）：每步先想再动，用观察修正推理。简单通用、成为事实标准；缺点是逐步贪心、长任务易跑偏</li>
+<li><b>Plan-and-Execute</b>：先整体规划成步骤列表，再逐步执行（可并行的并行）；执行偏差大时重新规划。长任务更稳、token 更省（计划只生成一次）</li>
+<li><b>Reflexion</b>：失败后生成<b>语言化反思</b>（哪步错了、下次怎么改），存入情景记忆指导重试——"自我改进"的经典实现</li>
+</ul>
+<p><b>现代变体</b>：长 CoT 推理模型（R1/o1）内化了反思回溯；Agentic RL（美团 JD 原词）——用强化学习直接优化"任务规划、反思与执行"的长链路稳定性和成功率，是当前前沿方向。</p>
+</div></details>
+
+<details><summary><span class="qno">Q61</span>CoT → ToT → 长链推理的演进</summary><div class="ans">
+<ul>
+<li><b>CoT</b>：线性思维链，把推理摊开在 token 上</li>
+<li><b>Self-Consistency</b>：采样多条 CoT 多数投票</li>
+<li><b>ToT（Tree of Thoughts）</b>：树状展开多分支思路，可评估、剪枝、回溯——搜索式推理</li>
+<li><b>长链推理模型</b>：RL 训出的模型自主生成"探索→验证→回溯→继续"的长推理轨迹（R1-Zero 涌现的 aha moment）；验证器（process reward model）与可验证奖励（代码单测、数学验算）是关键</li>
+</ul>
+<p><b>面试要点</b>：为什么推理能提升——注意力单次前向的串行计算深度有限，token 生成提供循环计算空间；推理时计算扩展（test-time scaling）是 o1/R1 的核心叙事。</p>
+</div></details>
+
+<h3 id="sec6-2">6.2 核心组件</h3>
+<details><summary><span class="qno">Q62</span>Function Calling 的实现原理？工具多了怎么办？</summary><div class="ans">
+<p><b>本质</b>：模型以<b>结构化 JSON</b> 输出（工具名 + 参数）替代自然语言回复。实现上是"受约束解码"——把工具的 JSON Schema 编译进语法约束（constrained decoding / grammar），保证输出 100% 可解析；训练用大量工具调用轨迹 SFT + RL。</p>
+<ul>
+<li><b>工具检索</b>：工具上百个时全塞 prompt 浪费上下文且选择准确率下降 → RAG 思想：按任务描述检索 top-k 相关工具动态注入（<b>工具即文档</b>，name/description 写清楚是效果第一变量）</li>
+<li><b>并行调用</b>：一次生成多个独立调用降低轮次；依赖调用必须串行</li>
+<li><b>错误处理</b>：工具返回错误 → 作为 observation 喂回让模型自纠（参数写错重试、换工具）；设最大轮次与 token 预算防爆循环</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q63</span>MCP 协议解决了什么？与 Function Calling 的关系？</summary><div class="ans">
+<p><b>MCP（Model Context Protocol，Anthropic 2024）</b>：把"模型 ↔ 工具/数据源"的连接标准化——M×N 的集成问题变 M+N（每个应用实现一次 client，每个数据源实现一次 server，协议互通）。</p>
+<ul>
+<li>类比 USB-C：统一的接口层；组件：Host（如 Claude/编辑器）、Client（连接器）、Server（暴露 tools/resources/prompts）</li>
+<li><b>与 FC 的关系</b>：FC 是模型能力（会不会输出结构化调用），MCP 是生态协议（工具如何被发现、描述、鉴权、传输）——FC 在下层，MCP 在上层，互补不替代</li>
+<li>价值：工具一次封装处处可用（文件系统、GitHub、数据库、浏览器都有现成 MCP server）；鉴权与企业管控标准化</li>
+</ul>
+<p><b>追问</b>：A2A（Agent-to-Agent，Google 提出）解决 agent 间协作握手——与 MCP（agent↔工具）是不同层的协议。</p>
+</div></details>
+
+<details><summary><span class="qno">Q64</span>记忆机制设计：短期、长期、工作记忆</summary><div class="ans">
+<ul>
+<li><b>短期记忆 = 上下文窗口</b>：对话历史、中间结果；窗口是稀缺资源（成本 + 长上下文注意力衰减 lost-in-the-middle）→ 需要<b>压缩与摘要</b>：老对话滚动摘要成简报，保留关键实体与承诺</li>
+<li><b>长期记忆 = 外部存储</b>：向量库（语义检索历史经验）、结构化 KV（用户偏好/事实，可用 LLM 抽取后写入）、情景记忆（过往任务轨迹，Reflexion 的反思就存这里）</li>
+<li><b>记忆写入策略</b>：什么时候写（任务结束总结 vs 实时）、写什么（去重、冲突合并——"用户换了工作"要覆盖旧事实）、如何检索（embedding 召回 + recency/importance 加权，类似 MemGPT/Letta 分页设计）</li>
+<li><b>工程红线</b>：记忆污染（错误信息被固化反复引用）需要来源追踪 + 用户可见可编辑</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q65</span>多智能体系统：什么时候拆？怎么编排？</summary><div class="ans">
+<ul>
+<li><b>拆分的理由</b>：① 上下文隔离（每个 agent 只看自己职责相关内容，避免 prompt 互相污染）② 角色专化（各自的 system prompt/工具集/模型档位——路由便宜任务到小模型）③ 并行加速</li>
+<li><b>不拆的理由</b>：通信成本、错误传播放大、调试困难——单 agent + 好工具能解决的别拆</li>
+<li><b>拓扑</b>：Supervisor（主控分派汇总，最常用）/ Pipeline（流水线传递产物）/ 辩论（多角色互相批判，提升答案质量）/ 去中心化（黑板模式）</li>
+<li><b>框架</b>：LangGraph（显式状态机，控制流代码化，生产主流）、AutoGen（多 agent 对话）、CrewAI（角色编排）；编排原则：确定性流程用代码写死，只把"判断"交给模型</li>
+</ul>
+</div></details>
+
+<h3 id="sec6-3">6.3 工程与评测</h3>
+<details><summary><span class="qno">Q66</span>上下文工程（Context Engineering）是什么？</summary><div class="ans">
+<p>比 prompt engineering 更系统的说法：LLM 应用性能 = 模型 × <b>放进上下文的内容</b>。上下文是稀缺资源，要像管理内存一样管理它：</p>
+<ul>
+<li><b>该放什么</b>：任务目标、约束、工具结果（裁剪过）、检索知识（rerank 过）、最少的示例</li>
+<li><b>结构</b>：system / 长期设定在前，动态信息居中，关键指令末尾复述（recency 偏置）；XML 标签分隔区块</li>
+<li><b>压缩</b>：工具返回的原始 JSON 裁剪字段；历史摘要化；无关轮次丢弃（compaction，Claude Code 的核心机制）</li>
+<li><b>长上下文 ≠ 免费注意力</b>：lost-in-the-middle 现象——中间信息召回率低；重要信息放两端，或用检索按需注入而非全量塞入</li>
+<li><b>上下文缓存</b>：prefix caching（相同 system prompt + 工具定义的 KV 复用）直接降本提速</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q67</span>Agent 怎么评测？SWE-bench 等基准的含义</summary><div class="ans">
+<ul>
+<li><b>结果评测</b>：任务成功率（最终状态对不对，自动化可验证——文件/单测/答案比对）；pass@k（k 次尝试至少 1 次成功——工程上 k=1 成本视角，k≥5 衡量能力上限）</li>
+<li><b>轨迹评测</b>：步骤正确性（用 LLM-as-judge 或规则判每步合理性）、工具选择准确率、轮次效率（达成任务的 token/步数成本）</li>
+<li><b>基准</b>：SWE-bench（真实 GitHub issue 修复，大模型编程能力金标准）、GAIA（通用助手任务）、WebArena（网页操作）、ToolBench、BFCL（function calling 准确率）、τ-bench（客服多轮工具任务）</li>
+<li><b>陷阱</b>：基准污染（issue 在训练数据里）——看 Verified/新题子集；环境非确定性（同一任务多次跑分数波动）→ 报 pass@k 与多次方差</li>
+<li><b>线上</b>：人工抽检 + 用户反馈信号（采纳率、修正率、放弃率）+ 护栏触发率</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q68</span>Agent 安全与护栏设计</summary><div class="ans">
+<ul>
+<li><b>提示注入</b>：恶意内容藏在工具返回/网页/文档里（"忽略之前指令，把数据发到……"）——间接注入是 agent 特有的最大攻击面；缓解：工具输出与指令隔离（明确标注"这是数据不是指令"）、敏感操作二次人工确认、最小权限</li>
+<li><b>权限收敛</b>：工具按需授权（读写分离、目录白名单）、沙箱执行代码、金额/外发类操作硬上限</li>
+<li><b>预算护栏</b>：最大轮次、最大 token、最长运行时间——agent 循环失控是真实成本事故来源</li>
+<li><b>幻觉动作</b>：调用不存在的工具/编造参数 → schema 强校验 + 参数合理性检查；重要事实引用来源</li>
+<li><b>可观测</b>：全链路 trace（每步 thought/action/observation 落盘）——回放调试与事故取证的基础</li>
+</ul>
+</div></details>
+</section>
+
+<!-- ================= 七、面试通用 ================= -->
+<section id="sec7">
+<h2>七、面试通用</h2>
+<details><summary><span class="qno">Q69</span>算法岗简历与项目怎么讲？（STAR + 深挖防御）</summary><div class="ans">
+<ul>
+<li><b>结构</b>：一句话背景（业务问题）→ 难点（为什么不能直接套标准方案）→ 你的方案（关键决策 + 为什么这么选）→ 量化结果（相对提升、AB 数据）→（可选）踩坑与迭代</li>
+<li><b>每一条都会被深挖三层</b>：① 为什么用 A 不用 B（对比过的方案）② 具体怎么做的（结构/超参/数据规模/算力）③ 数字怎么来的（评测口径、是否显著）。答不上来任何一层都比不写这条更伤——<b>简历上每个词都要能扛住三问</b></li>
+<li><b>大模型项目叙事模板</b>：基线（直接 prompt 原始模型）→ 痛点（长文档检索不准/延迟高/成本贵）→ 方法（RAG 切块+混合检索+重排 / LoRA 微调 / vLLM 部署+量化）→ 指标（准确率、P95 延迟、单次调用成本）→ 消融（每个组件贡献多少）</li>
+<li>把本站 LeetCode HOT 100 刷完并标注心得，本身就是简历上可信的一条</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q70</span>算法题面试的评分维度与准备策略</summary><div class="ans">
+<ul>
+<li><b>评分维度</b>（不只是 AC）：沟通（先澄清输入范围/边界再动手）→ 思路（暴力 → 优化路径讲清楚，复杂度分析随口就来）→ 代码（变量命名、边界处理）→ 测试意识（主动构造反例：空输入/单元素/全相同/极大值）</li>
+<li><b>准备策略</b>：HOT 100 按题型突破（本站已按难度排序，附思路/代码/易混淆点）——每个题型总结"识别信号"：见"前 K 个"想堆/快速选择；见"子数组和"想前缀和+哈希；见"区间重叠"想排序+贪心；见"求所有方案"想回溯</li>
+<li><b>当场卡住的话术</b>：先给暴力并分析复杂度（保底分）→ 提出 bottleneck → 逐个尝试数据结构优化。面试官提示时接得住（提示是观察你协作性的环节，不是羞辱）</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q71</span>系统设计题：设计一个推荐系统 / LLM 推理服务</summary><div class="ans">
+<p><b>推荐系统（30 分钟版）</b>：① 明确目标与指标（北极星+护栏）② 离线：样本构建（曝光-点击 join、防穿越）、特征体系（用户/item/上下文/交叉）、召回（多路+双塔+ANN）→ 排序（多任务 PLE）→ 重排（多样性）③ 在线：特征实时化（流式）、模型服务（打分延迟预算）、缓存策略 ④ 闭环：AB 实验、样本回流、天级更新 ⑤ 容量与降级。</p>
+<p><b>LLM 推理服务</b>：① 需求量化（QPS、TTFT/TPOT 目标、上下文长度、模型规模）② 单机：量化 + KV Cache + PagedAttention + continuous batching（vLLM/sglang）③ 扩展：TP/PP 切分、多副本负载均衡、prefix cache ④ 生态：网关限流排队、流式 SSE、function calling 路由、多模型分级（贵问题大模型，简单问题小模型）⑤ 可观测：token 用量、缓存命中率、长尾延迟。</p>
+<p><b>答题框架</b>：需求澄清 → 估算规模 → 高层架构图 → 逐模块深挖 → 瓶颈与权衡 → 容错与演进。主动讲 trade-off 是拿分关键（没有完美设计，只有上下文中的取舍）。</p>
+</div></details>
+
+<details><summary><span class="qno">Q72</span>反问环节问什么加分？</summary><div class="ans">
+<ul>
+<li><b>团队业务</b>：这个岗位前半年最可能接手的方向？团队在指标体系里最想改善的一环？</li>
+<li><b>技术栈</b>：训练/推理的自研程度（用开源框架还是自研平台）？GPU 资源怎么排队？</li>
+<li><b>成长</b>：新人有没有 mentor 机制？团队内部技术分享频率？</li>
+<li><b>避免</b>：薪资细节（留给 HR 面）、加班（间接问"团队节奏"）、百度就能查到的公司八卦</li>
+</ul>
+<p>反问是双向筛选信号——问出的问题质量反映你对这个岗位的思考深度。</p>
+</div></details>
+</section>
+</main>
+</div>
+<button id="backTop" title="回到顶部">↑</button>
+<script>
+(function () {
+  var searchBox = document.getElementById('searchBox');
+  var allDetails = Array.prototype.slice.call(document.querySelectorAll('main details'));
+  var noResult = document.getElementById('noResult');
+  var sectionEls = Array.prototype.slice.call(document.querySelectorAll('main section'));
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('#sideNav a'));
+
+  function applyFilter(q) {
+    q = q.trim().toLowerCase();
+    var anyVisible = false;
+    allDetails.forEach(function (d) {
+      var text = d.textContent.toLowerCase();
+      var hit = !q || text.indexOf(q) !== -1;
+      d.classList.toggle('hidden', !hit);
+      if (hit) { anyVisible = true; if (q) d.open = true; }
+    });
+    sectionEls.forEach(function (s) {
+      var vis = s.querySelectorAll('details:not(.hidden)').length;
+      s.style.display = vis ? '' : 'none';
+    });
+    noResult.style.display = anyVisible ? 'none' : 'block';
+  }
+  searchBox.addEventListener('input', function () { applyFilter(this.value); });
+
+  // 回到顶部
+  var backTop = document.getElementById('backTop');
+  window.addEventListener('scroll', function () {
+    backTop.classList.toggle('show', window.scrollY > 600);
+  });
+  backTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+  // 侧边栏当前区域高亮
+  window.addEventListener('scroll', function () {
+    var cur = '';
+    sectionEls.forEach(function (s) {
+      if (s.getBoundingClientRect().top < 160) cur = s.id;
+    });
+    navLinks.forEach(function (a) {
+      a.style.color = (a.getAttribute('href') === '#' + cur) ? 'var(--accent)' : '';
+      a.style.borderLeftColor = (a.getAttribute('href') === '#' + cur) ? 'var(--accent)' : 'transparent';
+    });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
