@@ -9,7 +9,7 @@ const PROB_STORAGE_KEY = 'leetcode_hot100_data';
 const KNOW_STORAGE_KEY = 'leetcode_knowledge_data';
 const CONFUSION_STORAGE_KEY = 'leetcode_confusion_data';
 const TOTAL_HOT100 = 100;
-const DATA_VERSION = 61; // 默认数据版本，更新默认数据时 +1
+const DATA_VERSION = 62; // 默认数据版本，更新默认数据时 +1
 const VERSION_KEY = 'leetcode_data_version';
 let problems = [];
 let knowledge = [];
@@ -853,9 +853,9 @@ const DEFAULT_KNOWLEDGE = [
   {
     id: 15, name: '快慢指针', category: '技巧',
     summary: '双指针以不同速度遍历，利用速度差来检测环、找中点、找倒数第 k 个节点',
-    content: '快慢指针（Fast and Slow Pointers / Floyd 判圈算法）是一种双指针技巧，两个指针从同一位置出发，但以不同速度移动（通常慢指针每次 1 步，快指针每次 2 步）。\n\n核心原理：\n- 检测环：如果有环，快指针一定会在环内追上慢指针（相对速度 = 1 步/轮，距离递减）\n- 找中点：快指针到末尾时，慢指针正好在中间\n- 找倒数第 k 个：快指针先走 k 步，然后两指针同速走\n\n核心应用场景：\n1. 判断链表是否有环（环形链表）\n2. 找到环的入口节点（环形链表 II）\n3. 找链表中点（回文链表、排序链表）\n4. 找链表倒数第 k 个节点\n5. 判断链表是否相交\n6. 数组/序列中的重复数检测（如 287 题）',
+    content: '快慢指针（Fast and Slow Pointers / Floyd 判圈算法）是一种双指针技巧，两个指针从同一位置出发，但以不同速度移动（通常慢指针每次 1 步，快指针每次 2 步）。\n\n核心原理：\n- 检测环：如果有环，快指针一定会在环内追上慢指针（相对速度 = 1 步/轮，距离递减）\n- 找中点：快指针到末尾时，慢指针正好在中间\n- 找倒数第 k 个：快指针先走 k 步，然后两指针同速走\n\n核心应用场景：\n1. 判断链表是否有环（环形链表）\n2. 找到环的入口节点（环形链表 II）\n3. 找链表中点（回文链表、排序链表）\n4. 找链表倒数第 k 个节点\n5. 判断链表是否相交\n6. 数组/序列中的重复数检测（如 287 题）\n\nfast 起点怎么定（关键细节，决定 slow 停在哪）：\n- fast = head：slow 停在 ⌊n/2⌋+1（偏右中点）。适合「返回中点本身」：876 找链表中点，偶数长度时返回第二个中点\n- fast = head->next：slow 停在 ⌈n/2⌉（偏左中点）。适合「切半」：148 排序链表——保证两半非空且都严格短于原链表；若错用 fast=head，n=2 时 slow 会停到后半首节点，剪断点过头，前半仍是完整 2 节点，递归不缩小直接死循环\n- 判环（141/142/287）：只需要「追上/到尾」这个事件，slow 停哪无所谓，起点随意（head 最直观；287 因两指针初始相同，需用 do-while 先走再判）\n口诀：找「事件」（追上/到尾）起点随意；找「位置」（中点）起点即精度——差一步出发，终点差一个节点',
     methods: '',
-    tips: '1. 快慢指针模板：while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }\n2. 判环时初始 slow 和 fast 都指向 head；若初始错开（fast=head->next），相遇逻辑不同需小心\n3. 找环入口（142 题）：相遇后 slow 回 head，两指针同速走，再次相遇处即入口\n4. 循环终止条件永远要先判断 fast 和 fast->next 非空，避免空指针\n5. 数组题中的「值域 + 快慢指针」变体（287 题）本质是把数组当作链表来遍历',
+    tips: '1. 快慢指针模板：while (fast && fast->next) { slow = slow->next; fast = fast->next->next; }\n2. fast 起点即精度：判环（141/142）只关心相遇事件，fast=head 即可；找中点切半（148）必须 fast=head->next（slow 停偏左中点，两半非空），fast=head 停偏右中点（876 用法），切半时 n=2 会死循环\n3. 找环入口（142 题）：相遇后 slow 回 head，两指针同速走，再次相遇处即入口\n4. 循环终止条件永远要先判断 fast 和 fast->next 非空，避免空指针\n5. 数组题中的「值域 + 快慢指针」变体（287 题）本质是把数组当作链表来遍历',
     createdAt: '2026-07-30T19:00:00'
   },
   {
