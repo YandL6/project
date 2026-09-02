@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeetCode Hot 100 刷题记录</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="header">
+    <div class="header-content">
+      <div class="header-badge">🔥 LeetCode Hot 100</div>
+      <h1>刷题记录</h1>
+      <p class="subtitle">记录每一道经典题目的知识点、解题思路与关键难点</p>
+    </div>
+  </header>
+
+  <!-- ==================== PROGRESS ==================== -->
+  <div class="progress-section">
+    <div class="progress-card">
+      <div class="progress-ring-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="ring-bg" cx="40" cy="40" r="34"/>
+          <circle class="ring-fg" id="progressRing" cx="40" cy="40" r="34"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div class="ring-text">
+          <span class="pct" id="progressPct">0%</span>
+          <span class="pct-label">完成</span>
+        </div>
+      </div>
+      <div class="progress-bars">
+        <div class="progress-bar-row">
+          <span class="pb-label" style="color:var(--easy)">简单</span>
+          <div class="pb-track"><div class="pb-fill easy" id="barEasy"></div></div>
+          <span class="pb-count" id="countEasy">0</span>
+        </div>
+        <div class="progress-bar-row">
+          <span class="pb-label" style="color:var(--medium)">中等</span>
+          <div class="pb-track"><div class="pb-fill medium" id="barMedium"></div></div>
+          <span class="pb-count" id="countMedium">0</span>
+        </div>
+        <div class="progress-bar-row">
+          <span class="pb-label" style="color:var(--hard)">困难</span>
+          <div class="pb-track"><div class="pb-fill hard" id="barHard"></div></div>
+          <span class="pb-count" id="countHard">0</span>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="sr-item">
+          <div class="sr-num" style="color:var(--primary)" id="statTotal">0</div>
+          <div class="sr-label">总计</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN ==================== -->
+  <div class="container">
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="搜索题号、标题、知识点..." oninput="renderCards()">
+      </div>
+      <div class="filters">
+        <select id="filterDifficulty" onchange="renderCards()">
+          <option value="">全部难度</option>
+          <option value="简单">简单</option>
+          <option value="中等">中等</option>
+          <option value="困难">困难</option>
+        </select>
+        <select id="filterSort" onchange="renderCards()">
+          <option value="difficulty" selected>难度 ↑</option>
+          <option value="number-asc">题号 ↑</option>
+          <option value="number-desc">题号 ↓</option>
+          <option value="title">标题 A-Z</option>
+          <option value="newest">最近添加</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">＋ 添加题目</button>
+      <button class="btn btn-knowledge" onclick="openKnowledgePanel()">📚 知识库</button>
+      <button class="btn btn-confusion" onclick="openConfusionPanel()">⚠️ 易混淆</button>
+      <div class="dropdown-wrap">
+        <button class="btn btn-ghost" onclick="toggleDropdown(event)" title="更多操作">⋮</button>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <button class="dropdown-item" onclick="exportData()">📤 导出题目数据</button>
+          <button class="dropdown-item" onclick="document.getElementById('importFileInput').click()">📥 导入题目数据</button>
+          <button class="dropdown-item" onclick="exportKnowledgeData()">📤 导出知识库</button>
+          <button class="dropdown-item" onclick="document.getElementById('importKnowledgeInput').click()">📥 导入知识库</button>
+          <button class="dropdown-item" onclick="exportConfusionData()">📤 导出易混淆点</button>
+          <button class="dropdown-item" onclick="document.getElementById('importConfusionInput').click()">📥 导入易混淆点</button>
+          <button class="dropdown-item" onclick="resetAllData()">🗑️ 重置所有数据</button>
+        </div>
+      </div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importData(event)">
+      <input type="file" id="importKnowledgeInput" accept=".json" style="display:none" onchange="importKnowledgeData(event)">
+      <input type="file" id="importConfusionInput" accept=".json" style="display:none" onchange="importConfusionData(event)">
+    </div>
+
+    <!-- Card Grid -->
+    <div id="cardGrid" class="card-grid"></div>
+
+    <!-- Deploy Guide -->
+    <div class="deploy-section">
+      <div class="deploy-header" onclick="toggleDeploy(this)">
+        <h3>🚀 部署上线指南</h3>
+        <span class="deploy-toggle">▾</span>
+      </div>
+      <div class="deploy-body">
+        <h4>📌 关于数据存储</h4>
+        <p>所有数据保存在浏览器 <strong>localStorage</strong> 中，不会上传到任何服务器。数据按「题目」和「知识库」分开存储，迁移时分别导出导入。</p>
+
+        <h4>方式一：GitHub Pages（推荐，免费）</h4>
+        <div class="deploy-card">
+          <div class="dc-title">📖 步骤说明</div>
+          <div class="dc-desc">
+            <ol style="padding-left:16px;margin:6px 0 0;">
+              <li>在 GitHub 创建仓库（如 <code>leetcode-hot100</code>）</li>
+              <li>上传 <code>index.html</code>、<code>style.css</code>、<code>app.js</code> 三个文件</li>
+              <li>进入 Settings → Pages，Source 设为 <code>main</code> 分支</li>
+              <li>访问 <code>https://你的用户名.github.io/leetcode-hot100/</code></li>
+            </ol>
+          </div>
+        </div>
+
+        <h4>方式二：Vercel</h4>
+        <div class="deploy-card">
+          <div class="dc-title">📖 步骤说明</div>
+          <div class="dc-desc">
+            <ol style="padding-left:16px;margin:6px 0 0;">
+              <li>访问 <a href="https://vercel.com" target="_blank" style="color:var(--primary)">vercel.com</a> 用 GitHub 登录</li>
+              <li>点击 Add New → Project，导入仓库</li>
+              <li>部署后获得 <code>.vercel.app</code> 域名</li>
+            </ol>
+          </div>
+        </div>
+
+        <h4>方式三：Netlify（拖拽即部署）</h4>
+        <div class="deploy-card">
+          <div class="dc-title">📖 步骤说明</div>
+          <div class="dc-desc">
+            <ol style="padding-left:16px;margin:6px 0 0;">
+              <li>访问 <a href="https://app.netlify.com" target="_blank" style="color:var(--primary)">app.netlify.com</a></li>
+              <li>将整个文件夹拖拽到 Sites 区域</li>
+              <li>自动部署完成</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROBLEM FORM MODAL ==================== -->
+  <div class="modal-overlay" id="formModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="formModalTitle">添加题目</h2>
+        <button class="close-btn" onclick="closeFormModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>题号 <span class="required">*</span></label>
+            <input type="number" id="inputNumber" min="1" placeholder="如 1">
+          </div>
+          <div class="form-group">
+            <label>难度 <span class="required">*</span></label>
+            <select id="inputDifficulty">
+              <option value="简单">简单</option>
+              <option value="中等" selected>中等</option>
+              <option value="困难">困难</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>中文标题 <span class="required">*</span></label>
+          <input type="text" id="inputTitle" placeholder="如 两数之和">
+        </div>
+        <div class="form-group">
+          <label>英文标题</label>
+          <input type="text" id="inputTitleEn" placeholder="如 Two Sum">
+        </div>
+        <div class="form-group">
+          <label>涉及知识点 <span class="required">*</span></label>
+          <input type="text" id="inputKnowledge" placeholder="用逗号分隔，如 vector, unordered_map, 哈希表">
+          <div class="hint">多个知识点请用逗号分隔</div>
+        </div>
+        <div class="form-group">
+          <label>解题思路 <span class="required">*</span></label>
+          <textarea id="inputSolution" rows="4" placeholder="描述解题思路，包括不同解法及其复杂度分析…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>关键难点</label>
+          <textarea id="inputDifficulties" rows="3" placeholder="记录关键难点、易错点、边界条件…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeFormModal()">取消</button>
+        <button class="btn btn-primary" onclick="saveProblem()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROBLEM DETAIL MODAL ==================== -->
+  <div class="modal-overlay detail-modal" id="detailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>题目详情</h2>
+        <button class="close-btn" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="editFromDetail()">✏️ 编辑</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFromDetail()">🗑️ 删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== KNOWLEDGE SIDEBAR ==================== -->
+  <div class="knowledge-overlay" id="knowledgeOverlay" onclick="closeKnowledgePanel()"></div>
+  <div class="knowledge-panel" id="knowledgePanel">
+    <div class="knowledge-panel-header">
+      <button class="kph-back" id="knowledgeBackBtn" onclick="showKnowledgeList()">←</button>
+      <div class="kph-title" id="knowledgePanelTitle">📚 知识库</div>
+      <button class="kph-close" onclick="closeKnowledgePanel()">✕</button>
+    </div>
+    <div class="knowledge-panel-body" id="knowledgePanelBody"></div>
+  </div>
+
+  <!-- ==================== KNOWLEDGE FORM MODAL ==================== -->
+  <div class="modal-overlay" id="knowledgeFormModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="kfTitle">添加知识点</h2>
+        <button class="close-btn" onclick="closeKnowledgeForm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>知识点名称 <span class="required">*</span></label>
+            <input type="text" id="kfName" placeholder="如 vector">
+          </div>
+          <div class="form-group">
+            <label>分类 <span class="required">*</span></label>
+            <input type="text" id="kfCategory" placeholder="如 STL 容器、算法思想">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>一句话概括 <span class="required">*</span></label>
+          <input type="text" id="kfSummary" placeholder="如 动态数组，支持随机访问">
+        </div>
+        <div class="form-group">
+          <label>详细概念介绍 <span class="required">*</span></label>
+          <textarea id="kfContent" rows="4" placeholder="详细介绍该知识点的概念、原理…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>常用方法 / API</label>
+          <textarea id="kfMethods" rows="4" placeholder="格式：方法名 | 说明 | 时间复杂度&#10;如：push_back() | 尾部添加元素 | 均摊 O(1)"></textarea>
+          <div class="hint">每行一条，用 | 分隔方法名、说明、时间复杂度</div>
+        </div>
+        <div class="form-group">
+          <label>刷题技巧</label>
+          <textarea id="kfTips" rows="3" placeholder="总结该知识点在 LeetCode 刷题中的使用技巧…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeKnowledgeForm()">取消</button>
+        <button class="btn btn-primary" onclick="saveKnowledge()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CONFUSION SIDEBAR ==================== -->
+  <div class="knowledge-overlay" id="confusionOverlay" onclick="closeConfusionPanel()"></div>
+  <div class="knowledge-panel" id="confusionPanel">
+    <div class="knowledge-panel-header">
+      <button class="kph-back" id="confusionBackBtn" onclick="showConfusionList()">←</button>
+      <div class="kph-title" id="confusionPanelTitle">⚠️ 易混淆点</div>
+      <button class="kph-close" onclick="closeConfusionPanel()">✕</button>
+    </div>
+    <div class="knowledge-panel-body" id="confusionPanelBody"></div>
+  </div>
+
+  <!-- ==================== CONFUSION FORM MODAL ==================== -->
+  <div class="modal-overlay" id="confusionFormModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="cfTitle">添加易混淆点</h2>
+        <button class="close-btn" onclick="closeConfusionForm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>标题 <span class="required">*</span></label>
+            <input type="text" id="cfTitleInput" placeholder="如 二分查找循环条件 left <= right vs left < right">
+          </div>
+          <div class="form-group">
+            <label>所属主题 <span class="required">*</span></label>
+            <input type="text" id="cfCategory" placeholder="如 二分查找、回溯、双指针">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>易混淆的内容 <span class="required">*</span></label>
+          <textarea id="cfConfusion" rows="3" placeholder="描述两个（或多个）容易搞混的点是什么…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>区别与理解 <span class="required">*</span></label>
+          <textarea id="cfDifference" rows="4" placeholder="解释它们的本质区别、各自适用场景、如何记忆…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>代码示例</label>
+          <textarea id="cfExample" rows="4" placeholder="给出对比的代码片段（可选）"></textarea>
+        </div>
+        <div class="form-group">
+          <label>记忆口诀 / 注意事项</label>
+          <textarea id="cfTips" rows="3" placeholder="一句话记忆技巧，或易踩的坑…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeConfusionForm()">取消</button>
+        <button class="btn btn-primary" onclick="saveConfusion()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST ==================== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script src="app.js"></script>
+</body>
+</html>
