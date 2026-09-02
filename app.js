@@ -9,7 +9,7 @@ const PROB_STORAGE_KEY = 'leetcode_hot100_data';
 const KNOW_STORAGE_KEY = 'leetcode_knowledge_data';
 const CONFUSION_STORAGE_KEY = 'leetcode_confusion_data';
 const TOTAL_HOT100 = 100;
-const DATA_VERSION = 60; // 默认数据版本，更新默认数据时 +1
+const DATA_VERSION = 61; // 默认数据版本，更新默认数据时 +1
 const VERSION_KEY = 'leetcode_data_version';
 let problems = [];
 let knowledge = [];
@@ -1010,6 +1010,22 @@ const DEFAULT_KNOWLEDGE = [
     tips: '1. 「第 k 大」= 升序第 n-k+1 小（下标 n-k），换算别搞反方向\n2. partition 有「挖坑法」与「交换法」两种写法，背熟一种即可，边界相等元素的处理要一致\n3. 三路划分（< / = / > 三段）可以一次排掉所有等于 pivot 的元素，重复值多时大幅加速\n4. 面试官问「最坏情况怎么办」：答随机化 pivot + 三路划分，或改用中位数的中位数（BFPRT）保证 O(n)',
     createdAt: '2026-09-02T10:00:00'
   },
+  {
+    id: 36, name: 'list', category: 'STL 容器',
+    summary: '双向链表：持有节点位置（迭代器）时插入/删除/挪动均 O(1)，splice 嫁接节点迭代器不失效，LRU 的核心容器',
+    content: 'std::list 是双向链表：每个节点存「前驱/后继」两个指针，内存不连续。\n\n与 vector 的核心差异：\n- 随机访问：list 无 operator[]，从 begin() 走到第 k 个要 O(k)；vector 是 O(1)\n- 中间插删：list 只要拿着迭代器就是 O(1)（改指针重接线）；vector 要整体搬移 O(n)\n- 迭代器移动：list 迭代器只能 ++ / --（双向），不能 it + 3 随机跳；vector 迭代器支持随机跳\n\nlist 迭代器的核心性质：插入元素、splice 挪动元素都不会使任何迭代器失效；只有被 erase 的那个节点的迭代器失效。这是「unordered_map<key, list<...>::iterator> 能长期当索引」的前提，也是 146 LRU 设计的地基。\n\nsplice 嫁接（list 特有，单节点 O(1)）：把节点从链表中摘下来接到目标位置，不拷贝、不析构、迭代器全保留：\n- L.splice(pos, other)：other 整段搬过来，other 变空\n- L.splice(pos, other, it)：摘 other 中 it 指向的单个节点\n- L.splice(pos, other, first, last)：摘一段（pos 不能落在 [first,last) 内）\n- C++11 起 other 可省略（自己接自己）：L.splice(pos, it)\npos 含义是「接到 pos 指向的位置之前」；LRU 中 dq.splice(dq.begin(), dq, it) 即「把节点摘下来接到头部」，等价于提到队头。\n\n刷题应用：146 LRU 缓存（list + unordered_map<key, 迭代器>）、460 LFU（同思路加频次桶）、任何需要 O(1) 中间删/挪元素的场景。',
+    methods: 'push_back / push_front | 尾部/头部插入 | O(1)\npop_back / pop_front | 尾部/头部删除 | O(1)\ninsert(it, x) / erase(it) | 在迭代器处插入/删除 | O(1)\nsplice(pos, lst, it) | 把 it 节点嫁接到 pos 之前（不拷贝不失效） | O(1)\nbegin() / end() | 头迭代器 / 尾后迭代器 | O(1)\n随机访问 | 无 operator[]，需逐个 advance | O(n)',
+    tips: '1. splice 挪动后迭代器不失效——LRU 里 map 存的迭代器不用更新，这是用 splice 而非 erase+insert 重写的关键\n2. 迭代器只能 ++/--，不能 +k；需要下标语义就别用 list\n3. 边遍历边删的标准写法：it = lst.erase(it)（erase 返回下一个有效迭代器）\n4. 删除节点前若 map 里存着它的迭代器，必须先同步删掉 map 条目，否则悬空\n5. 选型口诀：频繁随机访问选 vector；频繁在已知位置插删/挪动选 list；仅两端操作频繁用 deque',
+    createdAt: '2026-09-02T16:10:00'
+  },
+  {
+    id: 37, name: 'LRU 设计模式', category: '技巧',
+    summary: 'unordered_map<key, list迭代器> + list<pair<key,value>>：map 管「查得快」，list 管「排得序」，get/put 全 O(1)',
+    content: 'LRU（Least Recently Used）：容量满时淘汰最久未使用的条目，要求 get/put 都 O(1)。单一数据结构做不到——哈希查询快但无序，链表有序但查询慢，两者互补：\n\n职责分工（146 LRU 缓存）：\n- list<pair<int,int>> dq：按使用时间排序，front 是最近使用、back 是最久未用。节点里存 pair（key,value）而不是只存 value，是因为淘汰队尾时要反查 key 删 map 索引\n- unordered_map<int, list<pair<int,int>>::iterator> mp：key → 链表节点迭代器。注意值域是「迭代器」而不是 value：只有拿到迭代器，才能 O(1) 执行 splice 把节点提到队头\n\nget(key)：mp.find 命中后，dq.splice(dq.begin(), dq, it->second) 把节点提到队头（标记最近使用），返回 it->second->second。这里的三重解引用：map 迭代器 →（second）list 迭代器 →（second）pair 里的 value。\n\nput(key, value) 三分支：\n1. key 已存在：直接改节点 value（it->second->second = value）+ splice 提队头\n2. 容量满且 key 是新的：mp.erase(dq.back().first) 与 dq.pop_back() 成对执行，淘汰队尾（必须先删 map 再删链表，pop 之后 key 就取不到了）\n3. 插入新节点：dq.emplace_front(key, value) 后 mp[key] = dq.begin() 登记索引\n\n为什么 key 要存两份（map 的键 + 节点的 first）：map 的 key 用于「按 key 查位置」，节点里的 key 用于「按位置（队尾）反删索引」，方向相反，缺一不可。\n\n进阶：LFU（460）在 LRU 之上按频次分桶，每个频次一个 list；Java 的 LinkedHashMap（accessOrder=true）、Golang 的 container/list + map 都是同一套路。',
+    methods: 'get 命中 | find + splice 提队头 + 返回 value | O(1)\nput 更新已有 key | 改节点 value + splice 提队头 | O(1)\nput 新增（未满） | emplace_front + mp[key]=begin() 登记索引 | O(1)\nput 新增（已满） | 先成对淘汰队尾（erase 索引 + pop_back）再插入 | O(1)',
+    tips: '1. map 存 list 迭代器而非 value——拿到迭代器才能 O(1) 定位节点做 splice；存 value 的话 get 时不知道节点在链表哪个位置\n2. 链表节点必须存 key：淘汰从队尾发起，只有节点自己知道对应 map 的哪个条目\n3. mp.erase 与 dq.pop_back 必须成对且先 map 后链表，顺序反了 key 就取不到了\n4. splice 挪动不失效迭代器，所以提队头之后 map 无需任何更新\n5. 查询用 find（key 可能不存在，不能有副作用），写入用 operator[]（「不存在就插入」恰好是想要的语义）\n6. 手写双向链表版本面试也常考：哑头 + 哑尾两个哨兵可省掉大量判空分支',
+    createdAt: '2026-09-02T16:10:00'
+  },
 ];
 
 // ===================================================================
@@ -1375,6 +1391,16 @@ const DEFAULT_CONFUSIONS = [
     example: 'int ans = INT_MIN;\nint gain(TreeNode* node) {              // 以 node 向下单边最大贡献\n    if (!node) return 0;\n    int l = max(gain(node->left), 0);   // 负贡献砍掉\n    int r = max(gain(node->right), 0);\n    ans = max(ans, node->val + l + r);  // 拐弯路径在此结算\n    return node->val + max(l, r);       // 向上只能单边\n}',
     tips: '对比记忆：543 = 左高 + 右高（边数、非负）；124 = 左增益 + 根值 + 右增益（带权、可负要砍）。两题共用「返回单边、全局结算」骨架，是二叉树路径题的万能模板。',
     createdAt: '2026-09-02T10:00:00'
+  },
+  {
+    id: 37,
+    title: 'mp[key] vs mp.find(key)（operator[] vs find）',
+    category: 'C++ 语法',
+    confusion: '都是「按键查值」，为什么 LRU 的 get 用 find、put 却用 mp[key]？两者能随便互换吗？',
+    difference: '本质区别：find 只读，operator[] 可能写容器。\n\nmp[key]（operator[]）：\n- key 存在：返回 value 的引用，可读可写（mp[key].second++ 这种原地修改只有 [] 能做）\n- key 不存在：自动插入 {key, 默认值value} 再返回其引用——查一次不存在的 key，容器悄悄变大；对 unordered_map<int, list迭代器>，这个默认值是空迭代器，拿去 splice/解引用是未定义行为，程序大概率崩\n- 无法用于判存在性：查完不知道原来在不在\n- 在 const map / const 成员函数里编译不过（因为它可能修改容器）\n\nmp.find(key)：\n- 存在：返回指向条目的迭代器，it->second 访问值\n- 不存在：返回 mp.end()，容器零副作用\n- 「先判存在再取值」的标准姿势\n\nLRU 里的分工正好是教科书示范：get 是「查询、key 可能不存在」→ find + end() 判断，绝不污染 map；put 走到最后一步时 key 必然不在 map 里（存在的情况已提前处理）→ operator[] 的「不存在就插入」恰好就是想要的写入语义。',
+    example: '// get：查询可能 miss，必须 find\nauto it = mp.find(key);\nif (it == mp.end()) return -1;       // 不存在直接返回，map 无污染\ndq.splice(dq.begin(), dq, it->second);\nreturn it->second->second;\n\n// put：已确认 key 不在 map 里，operator[] 当插入用\ndq.emplace_front(key, value);\nmp[key] = dq.begin();                // 不存在则插入，语义正好',
+    tips: '口诀：find 是「我只看看」，[] 是「没有就造一个」。判存在用 count（或 C++20 的 contains）；只读场景（const 参数、只读函数）只能 find；两者性能同量级，差别纯粹在副作用。踩坑高发：在循环/条件里顺手写 mp[key] 做判断，map 被塞进垃圾条目还浑然不觉。',
+    createdAt: '2026-09-02T16:10:00'
   },
 ];
 
