@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>岗位与技能导航 · 算法求职</title>
+<style>
+:root {
+  --accent: #C81623; --accent-dark: #A01019; --bg: #f7f7f9; --card: #fff;
+  --text: #2c2c33; --muted: #6b6b76; --border: #e6e6ec; --code-bg: #f2f2f5;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); line-height: 1.75; }
+header { background: linear-gradient(135deg, #1d1d22 0%, #3a3a44 100%); color: #fff; padding: 28px 32px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,.15); }
+header h1 { font-size: 22px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+header h1 .tag { font-size: 12px; background: var(--accent); padding: 2px 10px; border-radius: 999px; font-weight: normal; }
+header .sub { font-size: 13px; color: #b9b9c4; margin-top: 4px; }
+header nav { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+header nav a { color: #e8e8ee; font-size: 13px; text-decoration: none; padding: 4px 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; transition: all .2s; }
+header nav a:hover { background: var(--accent); border-color: var(--accent); }
+main { max-width: 1080px; margin: 0 auto; padding: 28px 16px 60px; }
+section { margin-bottom: 44px; }
+h2 { font-size: 20px; padding: 10px 0 10px 14px; border-left: 5px solid var(--accent); margin-bottom: 16px; background: var(--card); border-radius: 0 8px 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+h3 { font-size: 15.5px; color: var(--accent-dark); margin: 22px 0 10px; }
+p { margin: 8px 0; font-size: 14px; color: #3a3a44; }
+ul, ol { padding-left: 22px; margin: 8px 0; font-size: 14px; color: #3a3a44; }
+li { margin: 4px 0; }
+b, strong { color: #1d1d22; }
+code { background: var(--code-bg); padding: 1px 6px; border-radius: 4px; font-size: 13px; font-family: "JetBrains Mono", Consolas, monospace; color: var(--accent-dark); }
+.key { color: var(--accent); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; background: var(--card); }
+th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+tr:hover td { background: rgba(200,22,35,.03); }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+.card h4 { font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card h4 .pill { font-size: 11px; font-weight: normal; color: #fff; background: var(--accent); border-radius: 4px; padding: 1px 8px; }
+.card h4 .pill.gray { background: #8a8a94; }
+.card h4 .pill.blue { background: #3a6ea5; }
+.linkbtn { display: inline-block; font-size: 13px; color: #fff !important; background: var(--accent); text-decoration: none; padding: 4px 14px; border-radius: 6px; margin: 4px 8px 4px 0; }
+.linkbtn:hover { background: var(--accent-dark); }
+.linkbtn.alt { background: #3a3a44; }
+.linkbtn.alt:hover { background: #1d1d22; }
+.skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.skill-tags span { font-size: 12px; background: var(--code-bg); border: 1px solid var(--border); color: #3a3a44; border-radius: 999px; padding: 2px 10px; }
+.skill-tags span.must { border-color: rgba(200,22,35,.4); color: var(--accent-dark); background: rgba(200,22,35,.05); }
+.path { border-left: 3px solid var(--border); margin: 10px 0 10px 6px; padding-left: 18px; }
+.path .step { position: relative; margin-bottom: 12px; }
+.path .step::before { content: ""; position: absolute; left: -25px; top: 7px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.path .step b { display: block; font-size: 14px; }
+.path .step span { font-size: 13px; color: var(--muted); }
+.notice { background: rgba(200,22,35,.05); border: 1px dashed rgba(200,22,35,.4); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #6b4044; margin: 14px 0; }
+#backTop { position: fixed; right: 24px; bottom: 30px; width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 18px; cursor: pointer; box-shadow: 0 4px 12px rgba(200,22,35,.4); opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 99; }
+#backTop.show { opacity: 1; pointer-events: auto; }
+footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 26px 16px 40px; border-top: 1px solid var(--border); }
+@media (max-width: 700px) { header { padding: 20px 16px; } table { font-size: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>岗位与技能导航 <span class="tag">算法 · 大模型 · 搜广推 · Agent</span></h1>
+  <div class="sub">四大意向方向的岗位画像、核心技能、学习路径，以及经核实的大厂招聘入口（信息核实时间：2026-09）</div>
+  <nav>
+    <a href="index.html">📚 八股文知识库</a>
+    <a href="../index.html">📝 LeetCode HOT 100 刷题</a>
+    <a href="https://github.com/YandL6/project" target="_blank">GitHub 仓库</a>
+  </nav>
+</header>
+<main>
+
+<section id="overview">
+  <h2>一、四大方向速览</h2>
+  <p>四个方向同根同源（都吃机器学习 + 深度学习 + 工程能力这碗饭），但考察侧重、岗位密度、竞争烈度差异很大。先用一张表建立全局认知：</p>
+  <table>
+    <tr><th>方向</th><th>典型岗位名</th><th>核心考察</th><th>岗位密度</th><th>竞争烈度</th></tr>
+    <tr>
+      <td><b>通用算法</b></td>
+      <td>机器学习算法工程师 / 算法工程师</td>
+      <td>ML 基础（LR/GBDT/SVM）、特征工程、SQL、LeetCode</td>
+      <td>中</td>
+      <td>中</td>
+    </tr>
+    <tr>
+      <td><b>大模型（LLM）</b></td>
+      <td>大模型算法 / 预训练·后训练研究员 / LLM Infra</td>
+      <td>Transformer 细节、训练范式（SFT/RLHF/DPO）、推理优化、论文</td>
+      <td>高（2026 最热）</td>
+      <td>高</td>
+    </tr>
+    <tr>
+      <td><b>搜广推（RSA）</b></td>
+      <td>推荐/搜索/广告算法工程师</td>
+      <td>召回-粗排-精排-重排全链路、CTR 模型族、A/B 实验、SQL 与大数据</td>
+      <td>高（变现最直接）</td>
+      <td>高</td>
+    </tr>
+    <tr>
+      <td><b>AI Agent</b></td>
+      <td>Agent 算法 / Agent Infra 研发 / Agent 应用工程师</td>
+      <td>LLM 工程化、Function Calling、记忆/规划/工具、评测、工程能力</td>
+      <td>快速上升</td>
+      <td>中高（懂工程者稀缺）</td>
+    </tr>
+  </table>
+  <div class="notice">选方向的现实建议：搜广推岗位最多、变现路径最成熟，适合求稳；大模型和 Agent 是 2026 增量最大的方向，但对论文/实习/项目深度的要求更高；通用算法岗常作为前几者的"兜底"投递项。四者可同投，八股准备有约 60% 重叠（详见 <a href="index.html" style="color:var(--accent)">八股文知识库</a>）。</div>
+</section>
+
+<section id="dir1">
+  <h2>二、通用算法工程师（机器学习方向）</h2>
+  <div class="card">
+    <h4>岗位画像 <span class="pill">基础盘</span></h4>
+    <p>业务场景最分散的一类：风控、量化、图像、语音、运筹优化、数据挖掘都算。面试最看重<b>机器学习基础的扎实程度</b>和<b>代码能力</b>，是其他三个方向的公共地基。对学历的容忍度相对最高，双非强项目也有机会。</p>
+  </div>
+  <div class="card">
+    <h4>核心技能（JD 高频词）</h4>
+    <div class="skill-tags">
+      <span class="must">机器学习基础（LR / 决策树 / SVM / 朴素贝叶斯）</span>
+      <span class="must">集成学习（XGBoost / LightGBM / CatBoost）</span>
+      <span class="must">Python（NumPy / Pandas / Scikit-learn）</span>
+      <span class="must">SQL（复杂取数、窗口函数）</span>
+      <span class="must">数据结构与算法（LeetCode medium）</span>
+      <span>特征工程</span><span>模型评估（AUC / KS / F1）</span><span>正则化与过拟合处理</span>
+      <span>Linux 环境</span><span>Spark / Flink（大数据场景）</span><span>Git</span>
+    </div>
+    <p><b>加分项：</b>Kaggle / 天池竞赛名次、ACM / ICPC 经历（虾皮等公司 JD 明确写了"有 ACM / Topcoder Algorithm 或类似算法竞赛经历者优先"）、顶会论文、高星开源项目。</p>
+  </div>
+  <div class="card">
+    <h4>学习路径</h4>
+    <div class="path">
+      <div class="step"><b>第一阶段 · 地基（1~2 个月）</b><span>统计学习基础：梯度下降、正则化（L1/L2）、损失函数、偏差-方差分解；刷完 sklearn 文档里的经典模型；每天 2~3 道 LeetCode。</span></div>
+      <div class="step"><b>第二阶段 · 主力模型（1 个月）</b><span>吃透 XGBoost / LightGBM：原理（ boosting / 负梯度 / 二阶泰勒）、调参、和 LR 的对比（这是最高频面试题之一）。</span></div>
+      <div class="step"><b>第三阶段 · 实战（1~2 个月）</b><span>打一场完整的 Kaggle / 天池比赛（CTR 预测类最对口），走完数据清洗 → 特征工程 → 模型融合 → 线上提交全流程，这段经历能撑起简历一整页。</span></div>
+      <div class="step"><b>第四阶段 · 八股串联</b><span>对照 <a href="index.html" style="color:var(--accent)">八股文知识库</a> 第二、三章逐题过，确保每题能讲 3 分钟以上。</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="dir2">
+  <h2>三、大模型（LLM）算法</h2>
+  <div class="card">
+    <h4>岗位画像 <span class="pill blue">2026 最热</span></h4>
+    <p>分为几条细分线：<b>预训练</b>（数据 / 架构 / Scaling Law）、<b>后训练</b>（SFT / RLHF / DPO / 推理强化）、<b>推理与部署</b>（量化 / KV Cache / vLLM）、<b>多模态</b>。以 DeepSeek 为例，其招聘页明确列出了"预训练（数据/算法）研究员""后训练（数据/算法）研究员""多模态理解研究员""大模型训练/推理框架工程师"等岗位。门槛明显偏高：多家公司 JD 要求<b>硕士起步、博士优先</b>（如阿丘科技大模型算法工程师要求"硕士及以上学历，1 年以上大模型或深度学习相关经验，博士优先"）。</p>
+  </div>
+  <div class="card">
+    <h4>核心技能（JD 高频词）</h4>
+    <div class="skill-tags">
+      <span class="must">Transformer 全家桶（Attention / 位置编码 / 归一化）</span>
+      <span class="must">PyTorch</span>
+      <span class="must">微调范式（SFT / LoRA / 全参微调）</span>
+      <span class="must">对齐（RLHF / DPO / PPO）</span>
+      <span class="must">推理优化（vLLM / 量化 / KV Cache）</span>
+      <span>分布式训练（DeepSpeed / Megatron）</span><span>数据工程（清洗 / 配比 / 去重）</span>
+      <span>评测（MMLU / 人类评估）</span><span>RAG / Agent</span><span>TensorRT / Triton 部署</span><span>CUDA（Infra 岗）</span>
+    </div>
+    <p><b>加分项：</b>ACL / NeurIPS / ICML / ICLR 论文；复现过开源大模型训练（如 nanoGPT、DeepSeek-R1 复现笔记）；对 <b>Long CoT 强化学习</b>有实践（月之暗面"强化学习算法研究员（大模型）"JD 明确写了研究 Long CoT 的 RL 技术，方向一为 Reasoning、方向二为 Agent，要求 985/211 研究生以上、博士优先）；有 TensorRT / vLLM 落地经验。</p>
+  </div>
+  <div class="card">
+    <h4>学习路径</h4>
+    <div class="path">
+      <div class="step"><b>第一步 · 吃透 Transformer</b><span>能手推 Scaled Dot-Product Attention 的复杂度、讲清 RoPE 为什么支持外推、Pre-Norm 与 Post-Norm 的训练稳定性差异——这是所有大模型面试的第一道关。</span></div>
+      <div class="step"><b>第二步 · 训练范式全链路</b><span>预训练目标（Causal LM）→ SFT 数据构造 → RLHF（奖励模型 + PPO）→ DPO，能画出完整 pipeline 并讲清每步的数据流。</span></div>
+      <div class="step"><b>第三步 · 动手项目</b><span>用 LoRA 微调一个 7B 模型（单卡可跑），做一个小型 RAG 系统（LangChain / LlamaIndex），再读 vLLM 的 PagedAttention 论文并写源码笔记。</span></div>
+      <div class="step"><b>第四步 · 论文追踪</b><span>精读：Attention Is All You Need、GPT-3、InstructGPT、LoRA、DPO、DeepSeek-V3/R1 技术报告。面试时"读过 R1 报告并能复述 GRPO 训练流程"是强信号。</span></div>
+    </div>
+  </div>
+</section>
+
+
+<section id="dir3">
+  <h2>四、搜广推（搜索 / 广告 / 推荐）</h2>
+  <div class="card">
+    <h4>岗位画像 <span class="pill">岗位最多 · 变现最直接</span></h4>
+    <p>工业界算法需求最旺盛的方向，字节 / 快手 / 美团 / 腾讯 / 阿里每家都有成建制的搜广推团队。技术栈高度一致，统称"信息流与检索"：<b>召回 → 粗排 → 精排 → 重排</b>的漏斗架构。2026 年的新趋势是<b>大模型与搜广推融合</b>——某北京公司搜广推 JD（50-70k·16薪）的职责已明确写为"负责大模型搜索增强核心算法研发与落地，内容推荐、流量分发"；虾皮 2027 校招"搜广推大模型方向算法工程师"则要求做"统一排序模型、Semantic ID、多模态表示学习"。</p>
+  </div>
+  <div class="card">
+    <h4>核心技能（JD 高频词）</h4>
+    <div class="skill-tags">
+      <span class="must">召回（协同过滤 / 双塔 / 向量化 Embedding）</span>
+      <span class="must">排序模型族（FM / DeepFM / Wide&amp;Deep / DIN）</span>
+      <span class="must">CTR / CVR 预估</span>
+      <span class="must">特征工程（大规模稀疏特征）</span>
+      <span class="must">SQL（Hive / Spark SQL，50% 时间在取数）</span>
+      <span class="must">A/B Testing 与显著性检验</span>
+      <span>多任务学习（MMoE / ESMM）</span><span>序列建模（DIN / DIEN / SIM）</span>
+      <span>离线指标（AUC / GAUC / NDCG）</span><span>图神经网络（PinSage）</span>
+      <span>强化学习（长期收益）</span><span>LLM 语义 Embedding / 生成式推荐</span><span>C++（性能敏感场景）</span>
+    </div>
+    <p><b>加分项：</b>Kaggle / 天池 CTR 预测比赛名次；熟悉大厂技术博客（阿里 / 美团 / 字节团队博客代表国内最高水平）；理解业务侧逻辑——为什么搜索要相关性、广告要出价（eCPM）、推荐要多样性与惊喜感。</p>
+  </div>
+  <div class="card">
+    <h4>学习路径</h4>
+    <div class="path">
+      <div class="step"><b>第一阶段 · 基础（1~2 个月）</b><span>统计与最优化 + Python + SQL 三件套；ML 基础模型（LR / GBDT）。SQL 一定练到能写多表 join + 窗口函数——"很多新人死在不会写复杂 SQL 取特征上"。</span></div>
+      <div class="step"><b>第二阶段 · 核心架构（1 个月）</b><span>吃透漏斗：召回（CF / Item2Vec / 双塔）、粗排、精排（FM → Wide&amp;Deep → DeepFM → DIN 演进脉络）、重排；每个模型能讲清"解决前一版什么问题"。</span></div>
+      <div class="step"><b>第三阶段 · 实战（1~2 个月）</b><span>打一场 CTR 预测比赛；精读 Wide&amp;Deep、DIN、MMoE、SIM 四篇论文并能白板复述结构。</span></div>
+      <div class="step"><b>第四阶段 · 前沿融合</b><span>关注 LLM + RSA：生成式推荐、Semantic ID、大模型语义召回、冷启动应用——这是 2026 校招 JD 的新增高频考点。</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="dir4">
+  <h2>五、AI Agent 方向</h2>
+  <div class="card">
+    <h4>岗位画像 <span class="pill blue">快速上升期</span></h4>
+    <p>2026 年招聘市场上增长最快的方向，分两条线：<b>Agent 算法</b>（规划 / 记忆 / 工具调用 / 多智能体协作 / Agentic RL）与 <b>Agent Infra / 工程</b>（框架、评测、部署）。DeepSeek 招聘页单独设有 <b>Agent Harness 团队</b>和 <b>Agent Infra 研发工程师</b>岗位，并有"通用 Agent 数据产品经理（办公/生活/搜索）""Code Agent 数据工程师"等数据侧岗位；字节校招也有 Agent 算法岗位；美团校招 JD 出现了 <b>Agentic RL</b> 字样。这一方向<b>懂工程的人比懂论文的人更稀缺</b>，CS 科班 + 扎实工程能力是差异化优势。</p>
+  </div>
+  <div class="card">
+    <h4>核心技能（JD 高频词）</h4>
+    <div class="skill-tags">
+      <span class="must">LLM 基础（能答透八股四大模型章）</span>
+      <span class="must">Prompt Engineering / 结构化输出</span>
+      <span class="must">Function Calling / Tool Use / MCP</span>
+      <span class="must">Python 工程能力</span>
+      <span>Agent 框架（LangChain / LangGraph / 自研）</span>
+      <span>记忆系统（短期 / 长期 / 向量检索 RAG）</span>
+      <span>规划与反思（ReAct / Plan-and-Execute）</span>
+      <span>多智能体（Multi-Agent 协作）</span>
+      <span>Agent 评测（任务成功率 / 轨迹评估）</span>
+      <span>沙箱与安全</span><span>Agentic RL（RL 训练 Agent）</span><span>前后端全栈（应用岗）</span>
+    </div>
+    <p><b>加分项：</b>自己从零搭过完整 Agent（而不是只调 API demo）、有开源 Agent 项目 star、在 SWE-bench / WebArena 等基准上做过实验、熟悉 DeepSeek-R1 式的推理强化学习并理解其与 Agent 决策的联系。</p>
+  </div>
+  <div class="card">
+    <h4>学习路径</h4>
+    <div class="path">
+      <div class="step"><b>第一步 · LLM 工程地基</b><span>先把八股四大模型章答透，再动手：裸 API 实现 ReAct 循环（不依赖框架），理解 Agent = LLM + 工具 + 记忆 + 规划 的本质。</span></div>
+      <div class="step"><b>第二步 · 核心组件逐个击破</b><span>Function Calling 的 JSON Schema 约束、RAG 全链路（切块 / Embedding / 检索 / 重排）、长期记忆设计、错误重试与自我反思机制。</span></div>
+      <div class="step"><b>第三步 · 完整项目</b><span>做一个能跑真实任务的 Agent（如代码助手 / 信息搜集 / 自动化运维），重点是<b>评测</b>：任务成功率、平均步数、成本——面试官最想听你怎么量化效果。</span></div>
+      <div class="step"><b>第四步 · 进阶</b><span>多智能体协作（AutoGen / MetaGPT 论文）、Agentic RL（读 DeepSeek-R1 报告 + 美团等团队的 Agentic RL 博客）、SWE-bench 复现。</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="companies">
+  <h2>六、大厂与 AI 公司招聘入口</h2>
+  <p>以下链接均为<b>官方招聘站点，已于 2026-09 逐一核实可达</b>。校招时间线以当年官方公告为准（表中为 2027 届秋招已公布的信息）。</p>
+
+  <h3>互联网大厂</h3>
+  <table>
+    <tr><th>公司</th><th>校招入口</th><th>主打方向（与你的意向相关）</th><th>2027 届校招节点</th></tr>
+    <tr>
+      <td><b>字节跳动</b></td>
+      <td><a href="https://jobs.bytedance.com/campus" target="_blank">jobs.bytedance.com/campus</a></td>
+      <td>Seed 大模型团队、Agent 算法、抖音 / 今日头条搜广推（推荐方向天花板）</td>
+      <td>8.3 起 — 2027.5.31，全年 4 次投递机会，内推简历优先处理</td>
+    </tr>
+    <tr>
+      <td><b>腾讯</b></td>
+      <td><a href="https://join.qq.com" target="_blank">join.qq.com</a></td>
+      <td>混元大模型、微信搜一搜 / 视频号推荐、广告（全网营收最大广告系统之一）</td>
+      <td>8.11 起，全新 AI 技术岗位首次上架</td>
+    </tr>
+    <tr>
+      <td><b>阿里巴巴</b></td>
+      <td><a href="https://campus-talent.alibaba.com" target="_blank">campus-talent.alibaba.com</a></td>
+      <td>通义实验室（Qwen 系开源模型）、淘宝天猫搜广推、阿里妈妈广告</td>
+      <td>常规秋招 8 月启动，官方站内查看</td>
+    </tr>
+    <tr>
+      <td><b>美团</b></td>
+      <td><a href="https://campus.meituan.com" target="_blank">campus.meituan.com</a></td>
+      <td>大模型（LongCat 团队，校招 JD 含 Agentic RL）、到店 / 外卖推荐与广告</td>
+      <td>8.17 — 10.31，3 个投递志愿，共 8 场笔试</td>
+    </tr>
+    <tr>
+      <td><b>百度</b></td>
+      <td><a href="https://talent.baidu.com" target="_blank">talent.baidu.com</a></td>
+      <td>文心大模型、百度搜索 / 信息流推荐</td>
+      <td>官方站内查看</td>
+    </tr>
+    <tr>
+      <td><b>京东</b></td>
+      <td><a href="https://campus.jd.com" target="_blank">campus.jd.com</a></td>
+      <td>电商搜索推荐广告（京准通）、言犀大模型</td>
+      <td>官方站内查看</td>
+    </tr>
+    <tr>
+      <td><b>快手</b></td>
+      <td><a href="https://campus.kuaishou.cn" target="_blank">campus.kuaishou.cn</a></td>
+      <td>快手主站推荐 / 商业化广告（社区推荐场景标杆）、可灵大模型</td>
+      <td>官方站内查看</td>
+    </tr>
+    <tr>
+      <td><b>华为</b></td>
+      <td><a href="https://career.huawei.com" target="_blank">career.huawei.com</a></td>
+      <td>昇腾 / 诺亚方舟实验室（计算视觉、语音语义、决策推理）、盘古大模型</td>
+      <td>官方站内查看（校招专区）</td>
+    </tr>
+    <tr>
+      <td><b>蚂蚁集团</b></td>
+      <td><a href="https://talent.antgroup.com/campus" target="_blank">talent.antgroup.com/campus</a></td>
+      <td>支付宝推荐 / 广告、百灵大模型、金融风控算法</td>
+      <td>官方站内查看</td>
+    </tr>
+    <tr>
+      <td><b>美团（社招）</b></td>
+      <td><a href="https://careers.meituan.com/web/home" target="_blank">careers.meituan.com</a></td>
+      <td>同上（社招通道，实习留用 / 后续跳槽参考）</td>
+      <td>—</td>
+    </tr>
+  </table>
+
+  <h3>AI 大模型公司（增量最猛）</h3>
+  <div class="card">
+    <h4>DeepSeek <span class="pill blue">AGI 一线</span></h4>
+    <p>岗位列表（2026-09 核实）几乎全是你的意向方向：<b>Agent Harness 团队</b>、<b>Agent Infra 研发工程师</b>、AI 搜索算法 / 架构工程师、预训练（数据/算法）研究员、后训练（数据/算法）研究员、多模态理解研究员、大模型训练 / 推理框架工程师、Code Agent 数据工程师。工作地北京 / 杭州。</p>
+    <a class="linkbtn" href="https://talent.deepseek.com" target="_blank">talent.deepseek.com</a>
+  </div>
+  <div class="card">
+    <h4>月之暗面 Moonshot <span class="pill blue">Kimi</span></h4>
+    <p>在招"强化学习算法研究员（大模型）"：研究基于 <b>Long CoT 的大模型强化学习</b>，方向一为推理能力 Reasoning、方向二为智能体 Agent；要求 985/211 研究生以上，博士优先，熟悉 RL 与大模型技术。官方 JD 发布于 BOSS直聘。</p>
+    <a class="linkbtn alt" href="https://www.zhipin.com/job_detail/4cd7287e5b715dd403d52t61GFBT.html" target="_blank">强化学习算法研究员 JD（BOSS直聘）</a>
+  </div>
+  <div class="card">
+    <h4>智谱 GLM <span class="pill blue">清华系</span></h4>
+    <p>GLM 系开源模型出品方，算法 / 工程 / 产品多线招聘，大模型岗位密度高。</p>
+    <a class="linkbtn" href="https://www.zhipuai.cn/zh/joinus" target="_blank">zhipuai.cn/zh/joinus</a>
+  </div>
+  <div class="card">
+    <h4>MiniMax <span class="pill blue">多模态</span></h4>
+    <p>MiniMax-01 系列（线性注意力 + MoE）出品方，招大模型算法 / 工程 / 产品。</p>
+    <a class="linkbtn" href="https://www.minimaxi.com/careers" target="_blank">minimaxi.com/careers</a>
+  </div>
+  <div class="notice">提示：AI 公司岗位变动极快，以上为 2026-09-02 快照。投递前务必以官网在招列表为准；大厂校招通道全年滚动开放（如字节至 2027.5），但<b>提前批和实习转正是算法岗录用的主通道</b>，越早投越有利。</div>
+</section>
+
+<section id="timeline">
+  <h2>七、求职准备时间线与行动建议</h2>
+  <ul>
+    <li><b>投递策略：</b>四大方向同投。大厂提前批（7~8 月）不笔试直接面试，是算法岗最重要的窗口；字节全年 4 次投递机会、内推优先，可尽早"试水"再迭代简历。</li>
+    <li><b>简历主线：</b>一条"大模型/搜广推"主线项目（LoRA 微调、RAG、CTR 比赛三选二）+ 一条工程辅线（Agent demo / 开源贡献）+ LeetCode HOT 100（配合 <a href="../index.html" style="color:var(--accent)">刷题主页</a>）。</li>
+    <li><b>八股覆盖：</b>按 <a href="index.html" style="color:var(--accent)">八股文知识库</a> 的章节顺序过：计算机基础 → ML → DL → LLM →（按方向选）搜广推或 Agent → 面试通用。LLM 章是 2026 年所有方向的必考章。</li>
+    <li><b>信息渠道：</b>牛客网面经（搜"2027 校招 + 岗位名"）、各厂官方招聘公众号、GitHub 上的开源 JD 汇总仓库；简历投递记录建议用表格管理（公司 / 岗位 / 时间 / 状态 / 下一步）。</li>
+    <li><b>防坑：</b>只投官方域名（上表全部核实过）；"培训贷""交钱内推"一律拉黑；猎头代招岗位（如搜广推 50-70k 那类）先核实代招公司主体再投。</li>
+  </ul>
+</section>
+
+</main>
+<footer>
+  <p>信息核实于 2026-09 · 招聘链接与时间线以各公司官网实时公告为准</p>
+  <p><a href="index.html" style="color:var(--accent)">返回八股文知识库</a> · <a href="../index.html" style="color:var(--accent)">LeetCode HOT 100</a> · <a href="https://github.com/YandL6/project" target="_blank" style="color:var(--accent)">GitHub</a></p>
+</footer>
+<button id="backTop" title="回到顶部">↑</button>
+<script>
+(function () {
+  var btn = document.getElementById('backTop');
+  window.addEventListener('scroll', function () {
+    btn.classList.toggle('show', window.scrollY > 400);
+  }, { passive: true });
+  btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+})();
+</script>
+</body>
+</html>
