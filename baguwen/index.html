@@ -28,6 +28,7 @@ aside a.lvl1 { font-weight: 600; color: var(--text); margin-top: 8px; }
 aside a.lvl2 { padding-left: 26px; font-size: 12.5px; }
 main { flex: 1; min-width: 0; }
 section { margin-bottom: 36px; }
+.secIntro { font-size: 13.5px; color: var(--muted); background: rgba(200,22,35,.04); border: 1px dashed rgba(200,22,35,.35); border-radius: 8px; padding: 10px 14px; margin: 10px 0 14px; }
 h2 { font-size: 20px; padding: 10px 0 10px 14px; border-left: 5px solid var(--accent); margin-bottom: 16px; background: var(--card); border-radius: 0 8px 8px 0; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
 h3 { font-size: 15.5px; color: var(--accent-dark); margin: 22px 0 10px; }
 details { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; transition: box-shadow .2s; }
@@ -60,7 +61,7 @@ summary .qno { font-size: 12px; color: #fff; background: var(--accent); border-r
 <body>
 <header>
   <h1>计算机求职八股文知识库 <span class="tag">持续更新</span></h1>
-  <div class="sub">覆盖：计算机基础 · 机器学习 · 深度学习 · 大模型（LLM）· 搜广推 · AI Agent · 面试通用 —— 面向算法 / 大模型 / 搜广推 / Agent 岗位求职</div>
+  <div class="sub">覆盖：计算机基础 · 机器学习 · 深度学习 · 大模型（LLM）· 搜广推 · AI Agent · 面试通用 · 2026 前沿热点 —— 面向算法 / 大模型 / 搜广推 / Agent 岗位求职</div>
   <nav>
     <a href="jobs.html">📍 岗位与技能要求</a>
     <a href="../index.html">📝 LeetCode HOT 100 刷题</a>
@@ -99,6 +100,12 @@ summary .qno { font-size: 12px; color: #fff; background: var(--accent); border-r
     <a class="lvl2" href="#sec6-2">6.2 核心组件</a>
     <a class="lvl2" href="#sec6-3">6.3 工程与评测</a>
     <a class="lvl1" href="#sec7">七、面试通用</a>
+    <a class="lvl1" href="#sec8">八、2026 前沿热点</a>
+    <a class="lvl2" href="#sec8-1">8.1 大模型架构新范式</a>
+    <a class="lvl2" href="#sec8-2">8.2 推理模型与 RL 新范式</a>
+    <a class="lvl2" href="#sec8-3">8.3 Agent 协议生态</a>
+    <a class="lvl2" href="#sec8-4">8.4 生成式推荐</a>
+    <a class="lvl2" href="#sec8-5">8.5 Agentic Coding 评测</a>
   </nav>
 </aside>
 <main>
@@ -902,6 +909,169 @@ Answer: ……</code></pre>
 <li><b>避免</b>：薪资细节（留给 HR 面）、加班（间接问"团队节奏"）、百度就能查到的公司八卦</li>
 </ul>
 <p>反问是双向筛选信号——问出的问题质量反映你对这个岗位的思考深度。</p>
+</div></details>
+</section>
+
+<!-- ================= 八、2026 前沿热点 ================= -->
+<section id="sec8">
+<h2>八、2026 前沿热点</h2>
+<p class="secIntro">面试官越来越爱问"最近关注了什么新技术"。本章覆盖 2025–2026 年算法岗面试新增的高频考点：<b>MoE / MLA 架构、推理模型与 GRPO、MCP / A2A 协议生态、生成式推荐、Agentic Coding 评测</b>。每题都能答出，是"真的在追前沿"的硬信号。</p>
+
+<h3 id="sec8-1">8.1 大模型架构新范式</h3>
+<details><summary><span class="qno">Q73</span>MoE（混合专家）架构：原理、路由与负载均衡</summary><div class="ans">
+<p><b>核心思想</b>：把 Transformer 的 FFN 替换为多个"专家"FFN，每个 token 只经路由器（gating network）激活其中一小部分——<span class="key">总参数量巨大、单 token 计算量小</span>。DeepSeek-V3 共 671B 总参数，每 token 仅激活约 37B（约 5.5%），却达到同规模稠密模型的能力。</p>
+<ul>
+<li><b>路由机制</b>：门控网络对每个专家打亲和度分数，Top-K 选出活跃专家，输出加权融合。DeepSeek-V3 为 <b>256 个路由专家选 8 个 + 1 个常驻共享专家</b>；共享专家负责捕捉通用知识（每个 token 都走），路由专家负责分化知识</li>
+<li><b>细粒度专家</b>（DeepSeekMoE 特色）：把专家切小、多选几个，比"少数大专家"更能让不同专家学到有区分度的知识，减少专家间同化</li>
+<li><b>负载均衡三件套</b>：① 辅助负载均衡损失（DeepSeek-V2 用，鼓励 token 均匀分配到专家）② <b>无辅助损失的均衡策略</b>（V3 首创：给每个专家一个可学习的 bias 项动态调节路由概率，避免辅助损失干扰主损失）③ 专家容量因子（capacity factor）：专家超载时多余 token 经残差直接流向下一层</li>
+<li><b>工程</b>：训练推理都要专家并行（EP）——专家分片到不同 GPU，All-to-All 通信交换 token；负载不均会让部分 GPU 成为瓶颈</li>
+</ul>
+<p><b>追问高频</b>：① MoE 为什么训练容易不稳定？（路由是离散选择，梯度不可导，用 softmax 加权 + 辅助损失软化）② 共享专家为什么不能省？（没有它，通用知识会被迫分散到所有路由专家，浪费容量）③ 和稠密模型的部署差异？（显存要装下全部专家，激活参数少≠显存少；吞吐高但首 token 延迟受路由通信影响）</p>
+</div></details>
+
+<details><summary><span class="qno">Q74</span>MLA（多头潜在注意力）：DeepSeek 为什么要"压缩再恢复"KV？</summary><div class="ans">
+<p><b>问题背景</b>：MHA 的 KV Cache 随序列长度线性增长（每层 × 头数 × 头维），长上下文推理时显存爆炸。MQA/GQA 靠"砍头数"缓解但牺牲表达能力。</p>
+<p><b>MLA 思路</b>：对 K、V 做<b>低秩联合压缩</b>——先把隐状态 h 降维到一个远小于「头数×头维」的潜在向量 c<sup>KV</sup>，缓存时只存 c<sup>KV</sup>；注意力计算时再经上投影矩阵恢复出各头的 K 和 V。因为「降维→升维」矩阵是训练出来的，压缩是有损但可控的，性能与 MHA 相当。</p>
+<ul>
+<li><b>数学形式</b>：c<sup>KV</sup><sub>t</sub> = W<sup>DKV</sup>h<sub>t</sub>（降维）；k<sub>t</sub> = W<sup>UK</sup>c<sup>KV</sup><sub>t</sub>，v<sub>t</sub> = W<sup>UV</sup>c<sup>KV</sup><sub>t</sub>（升维）。推理时只缓存 c<sup>KV</sup><sub>t</sub> 和解耦的 RoPE 键 k<sup>R</sup><sub>t</sub></li>
+<li><b>解耦 RoPE 的原因</b>：位置旋转作用在完整 K 上时，"先压缩再恢复"与 RoPE 的交换次序不兼容，所以把带位置信息的部分单独拆一路出来计算和缓存</li>
+<li><b>收益</b>：KV Cache 大幅缩小 → 同样显存能塞更大 batch → 吞吐提升；Q 也做了低秩压缩，训练时激活显存更省</li>
+<li><b>权衡</b>：矩阵乘法多了一层（升维要在注意力时算），可用算子融合（吸收进权重）优化——这也是面试里"MLA 推理怎么加速"的常见追问</li>
+</ul>
+<p><b>对比记忆</b>：MQA 砍 K/V 头数（显存↓ 表达↓）、GQA 分组共享（折中）、MLA 低秩压缩（显存↓↓ 性能≈MHA）——一句话：<span class="key">GQA 是"减少份数"，MLA 是"换个更小的存储表示"</span>。</p>
+</div></details>
+
+<details><summary><span class="qno">Q75</span>MTP（多 Token 预测）与投机解码：训练目标与推理加速的联动</summary><div class="ans">
+<p><b>MTP</b>：传统自回归每步只预测下一个 token；MTP 在每个位置<b>并行预测未来多个 token</b>（DeepSeek-V3 在主输出头之外接额外的 MTP 模块——一个小 Transformer 层 + 输出投影，接收对应深度的中间表示，预测第 2、3 个 token）。训练时多个预测损失加权求和，等于给模型更密的监督信号，benchmark 表现更强。</p>
+<p><b>与投机解码（speculative decoding）的关系</b>：MTP 头天然可以作为 draft model——主模型生成 1 个 token 的同时，MTP 头"顺便"预测出后面 2~3 个候选 token，由主模型并行验证，验证通过就一次接受多个 token。<span class="key">训练时的辅助目标，推理时白捡的加速器</span>。</p>
+<ul>
+<li><b>投机解码通用原理</b>（不依赖 MTP）：小模型（draft）快速生成草稿 → 大模型（target）一次前向并行打分验证 → 接受通过的前缀、从第一个分歧点重新生成。数学保证输出分布与大模型单独采样完全一致（lossless）</li>
+<li><b>加速条件</b>：草稿接受率要高（任务越"可预测"越快，代码 > 创意写作）；大模型并行验证 batch 的成本要低于逐步自回归</li>
+<li><b>其他主流加速</b>：vLLM 的 PagedAttention + continuous batching、量化（W8A8/FP8/W4A16）、prefix caching（共享系统提示词的请求复用 KV）</li>
+</ul>
+<p><b>追问高频</b>：为什么验证可以并行？——自回归逐步生成是串行依赖，但"给定前缀给每个位置打分"只需一次前向，这是投机解码成立的根本。</p>
+</div></details>
+
+<details><summary><span class="qno">Q76</span>长上下文扩展：YaRN 与 RoPE 插值</summary><div class="ans">
+<p><b>问题</b>：RoPE 在训练长度外（如 4K 训练、128K 推理）外推时注意力分数会崩坏，模型"失忆"。解决思路是<b>位置插值</b>：把长序列的位置 id 压缩回训练见过的范围。</p>
+<ul>
+<li><b>线性插值（PI）</b>：位置 id 乘以 训练长度/目标长度 比例缩小——所有相邻 token 间距被等比压小，高频细节丢失</li>
+<li><b>NTK-aware</b>：不缩位置，而是<b>调大 RoPE 频率基 base</b>（如 10000 → 更大），让高频分量保持不变、只拉伸低频——"高频管局部语义、低频管远距离"，局部能力不受损</li>
+<li><b>YaRN</b>：在 NTK-aware 基础上再对每维频率做温度/注意力温度修正，并用<b>很少的微调步数</b>（数千步）就能把 4K/8K 的模型扩到 128K，短上下文性能不退步——DeepSeek-V3 采用的就是 YaRN</li>
+</ul>
+<p><b>面试要点</b>：长上下文的另一个瓶颈不在位置编码而在 KV Cache 显存（见 MLA 题）与<b>有效上下文</b>（"大海捞针"测试过≠能真正利用全部上下文，中间部分信息利用率低，即 "lost in the middle" 现象）。评测长上下文要报 NIAH（大海捞针）+ 长文档 QA + 关键信息检索等多档任务。</p>
+</div></details>
+
+<h3 id="sec8-2">8.2 推理模型与 RL 新范式</h3>
+<details><summary><span class="qno">Q77</span>推理模型（o1 / R1 类）：test-time compute 到底是什么？</summary><div class="ans">
+<p><b>范式转变</b>：过去提升性能 = 训练时堆算力（更大模型/更多数据）；推理模型证明<b>推理时堆算力</b>（生成更长的思维链、自我验证、多路径搜索）也能显著提升——这叫 <span class="key">test-time compute / inference scaling</span>。</p>
+<ul>
+<li><b>效果量级</b>：以 AIME 数学竞赛为例，GPT-4o 单次采样约 13%，o1 用长 CoT 单次采样达到 74%、配合重排序 93%；到 o3 在 AIME 2024 上 96.7%——从"及格线"到"接近满分"全靠推理时算力</li>
+<li><b>机制直觉</b>：CoT 把"一跳答不出的题"分解成多步，每步都在浅层计算，等价于<b>用 token 串行计算换并行层数不够的问题</b>；自我反思与回溯让模型能纠错，而不是"一条路走到黑"</li>
+<li><b>代价与权衡</b>：延迟与 token 成本成倍增加 → 生产上要做"路由"（简单问题走普通模型，难题才走推理模型），这也是各家做模型分级路由的原因</li>
+<li><b>训练侧来源</b>：能力主要来自<b>大规模强化学习</b>（让模型自己探索出长思考策略），而不是仅靠 SFT 蒸馏现成的长 CoT（见 R1 题）</li>
+</ul>
+<p><b>追问高频</b>：① 长度与质量的怪象——RL 训练后期模型输出会越来越长（奖励只有对错时，更长的验算提高正确率），需要加长度惩罚控制；② 为什么小模型蒸馏推理能力有效？（推理模式可以迁移，但小模型容量有限，超过某个规模差才明显）</p>
+</div></details>
+
+<details><summary><span class="qno">Q78</span>GRPO 与 PPO / DPO 的对比：为什么 R1 选了 GRPO？</summary><div class="ans">
+<p><b>PPO 的负担</b>：需要 4 个模型在显存里共存——策略模型、参考模型（算 KL 约束）、奖励模型、<b>Critic（价值网络，估计每个 token 的优势）</b>。Critic 与策略模型同规模，显存和计算直接翻倍，且在 LLM 场景训练价值网络本身就难收敛。</p>
+<p><b>GRPO（Group Relative Policy Optimization）</b>：DeepSeekMath 提出、R1 沿用的改进——<span class="key">干掉 Critic，用"组内相对排名"当 baseline</span>：对同一个 prompt 采样一组（如 16 条）回答，每条的优势 =（自身奖励 − 组均值）/ 组标准差。组内互相比较天然扣除 prompt 难度的影响，省掉整个价值网络。</p>
+<ul>
+<li><b>GRPO vs PPO</b>：优势估计从"学习的价值函数"变成"组内统计量"——省一半显存、训练更稳；代价是每个 prompt 要采样多条（生成开销换 critic 开销），且优势估计噪声更大</li>
+<li><b>GRPO vs DPO</b>：DPO 完全不用在线采样与奖励模型（离线偏好对直接构造损失），适合对齐通用对话；GRPO 在线探索 + 结果奖励，适合<b>有客观可验证奖励的推理任务</b>（数学答案对错、代码单测通过）——所以 R1 用 RL（GRPO）而不是 DPO</li>
+<li><b>R1 的奖励设计</b>：纯结果奖励（答案对=1 错=0）+ 格式奖励（把推理过程放进 &lt;think&gt; 标签）——<b>不给过程奖励</b>，让"怎么思考"完全由模型自己探索</li>
+<li><b>KL 处理</b>：R1 甚至把 KL 惯例项也从损失里移出、融进优化器更新，进一步防熵坍缩</li>
+</ul>
+<table>
+<tr><th></th><th>PPO</th><th>GRPO</th><th>DPO</th></tr>
+<tr><td>在线采样</td><td>是</td><td>是（组内多条）</td><td>否（离线对）</td></tr>
+<tr><td>奖励模型</td><td>要</td><td>可只要规则奖励</td><td>不要</td></tr>
+<tr><td>Critic</td><td>要（同规模）</td><td><b>不要</b></td><td>不要</td></tr>
+<tr><td>适用</td><td>通用 RLHF</td><td>可验证奖励的推理 RL</td><td>偏好对齐</td></tr>
+</table>
+</div></details>
+
+<details><summary><span class="qno">Q79</span>过程奖励（PRM）vs 结果奖励（ORM）：数学推理 RL 的两条路线</summary><div class="ans">
+<ul>
+<li><b>ORM（Outcome Reward Model）</b>：只看最终答案对不对打分。优点：标注便宜（对/错二值）、无标注歧义；缺点：奖励稀疏——一条几百步的推理只有一个信号，信噪比低，模型可能学会"表面验算"而非真推理</li>
+<li><b>PRM（Process Reward Model）</b>：对推理<b>每一步</b>打分（这步是否有效、是否在正确的方向上）。优点：信号密、可定位错误步骤，对搜索式解码（step-level beam search / MCTS）友好；缺点：步骤级标注贵且标准难统一，人工标数据集（如 PRM800K）成本高，还有"过程正确但答案错"的假阳问题</li>
+<li><b>DeepSeek-R1 的选择</b>：纯 ORM——他们发现给模型加过程奖励会引入人工先验、限制模型探索出人意料的推理策略（以及奖励作弊风险）；结果奖励 + 足够大的采样规模，CoT 质量自己涌现</li>
+<li><b>折中方案</b>：蒙特卡洛 rollout 估计步骤价值（自动构造 PRM 数据，免人工）；或轻量规则奖励（格式、长度）辅助稳定训练</li>
+</ul>
+<p><b>答题框架</b>：先说两者定义与 trade-off（信号密度 vs 标注成本/偏差），再点出"可验证奖励领域（数学/代码）ORM + RL 已够用，开放领域仍需 PRM/偏好模型"，最后带一句 R1 的实证结论。</p>
+</div></details>
+
+<details><summary><span class="qno">Q80</span>DeepSeek-R1 的训练流程与蒸馏：从 R1-Zero 到可用模型</summary><div class="ans">
+<ul>
+<li><b>R1-Zero（关键实验）</b>：直接在 base 模型上做大规模 RL（GRPO + 规则奖励），<b>完全跳过 SFT</b>。结果：推理能力自行涌现（反思、"aha moment"、验证回溯），证明 RL 是推理能力的来源而非仅靠模仿；但可读性差、语言混杂</li>
+<li><b>R1 完整流程（四阶段）</b>：① 冷启动：用少量长 CoT 数据 SFT，给推理一个可读的起点 ② 推理 RL：大规模 GRPO + 语言一致性奖励 ③ <b>拒绝采样 + 全场景 SFT</b>：从 RL 检查点采样、按答案正确性筛出优质数据，混合写作/问答/翻译等通用数据再 SFT ④ 对齐 RL：混合场景的多奖励再强化——解决"只会推理不会聊天"</li>
+<li><b>蒸馏</b>：用 R1 生成的长 CoT 数据直接 SFT 小模型（Qwen/Llama 系列 1.5B~70B 稠密模型）。结论：<b>大模型蒸馏 > 小模型直接 RL</b>（14B 蒸馏版超过 14B 自 RL 版），推理模式的传递比从零探索高效得多</li>
+<li><b>面试落点</b>：这个流程是"RL 造能力、SFT 定格式、蒸馏降成本"的完整样板，被后续几乎所有推理模型沿用（含各家 2026 年的 Long CoT RL 岗位要求）</li>
+</ul>
+</div></details>
+
+<h3 id="sec8-3">8.3 Agent 协议生态</h3>
+<details><summary><span class="qno">Q81</span>MCP（Model Context Protocol）：AI 的"USB-C 接口"</summary><div class="ans">
+<p><b>是什么</b>：Anthropic 2024 年 11 月发布的开放协议，标准化<b>模型 ↔ 工具/数据源</b>的连接方式；2025 年 12 月捐给 Linux Foundation 旗下 Agentic AI Foundation 治理。到 2026 年初生态活跃服务端已超万个。</p>
+<ul>
+<li><b>解决的问题</b>：以前 M 个 AI 应用 × N 个数据源 = M×N 套定制集成；MCP 把它变成 <b>M+N</b>——每个应用实现一次客户端、每个服务实现一次服务端，即插即用（USB-C 类比的由来）</li>
+<li><b>技术形态</b>：基于 <b>JSON-RPC 2.0</b> 的客户端-服务器协议。客户端（host 应用，如 IDE、聊天客户端）持有模型；服务端封装工具能力</li>
+<li><b>三类原语</b>：<b>Tools</b>（模型可主动调用的动作，带名称/描述/JSON Schema 参数定义，配合 function calling）、<b>Resources</b>（可读取的上下文数据：文件、数据库记录）、<b>Prompts</b>（预定义任务模板）</li>
+<li><b>交互流程</b>：客户端连上服务端 → tools/list 拉取能力清单 → 注入模型上下文 → 模型决定调用 → 客户端经 JSON-RPC 转发给服务端执行 → 结果回填模型 → 继续对话。<span class="key">决策权在模型（客户端），服务端是被动的执行方</span></li>
+<li><b>安全设计</b>：动态凭证（短期访问令牌）、字段级最小权限、审计日志</li>
+</ul>
+<p><b>追问高频</b>：MCP 和普通 function calling 什么区别？——function calling 是模型能力（模型学会输出结构化调用），MCP 是<b>生态协议</b>（调用怎么发现、传输、鉴权的标准化）；MCP 的 tools 本身就是通过 function calling 让模型用的。</p>
+</div></details>
+
+<details><summary><span class="qno">Q82</span>MCP / A2A / ANP：Agent 通信协议怎么选？</summary><div class="ans">
+<p>2025–2026 年 Agent 协议的格局是"分层互补"，不是互相替代：</p>
+<table>
+<tr><th>协议</th><th>连接对象</th><th>提出方/时间</th><th>核心机制</th></tr>
+<tr><td><b>MCP</b></td><td>模型 ↔ 工具/资源</td><td>Anthropic，2024.11（2025.12 入 Linux Foundation）</td><td>JSON-RPC 客户端-服务器；tools/resources/prompts 三原语</td></tr>
+<tr><td><b>A2A</b></td><td>Agent ↔ Agent</td><td>Google，2025.4（2025.6 入 Linux Foundation，100+ 公司支持）</td><td><b>Agent Card</b>（/.well-known/agent.json 声明能力）+ 任务生命周期（created → working → completed/failed）</td></tr>
+<tr><td><b>ANP</b></td><td>互联网尺度的去中心化 Agent 网络</td><td>社区</td><td>语义化描述文档 + URL 互链，类爬虫的按需发现</td></tr>
+</table>
+<ul>
+<li><b>MCP vs A2A</b>：MCP 管"agent 用工具"（工具是无状态的、结构化输入输出的原语）；A2A 管"agent 找 agent 合作"（对方是会推理、有状态、多轮交互的自主系统，调用方只关心"做什么"不关心"怎么做"）。</li>
+<li><b>典型组合</b>：一个 agentic 应用用 A2A 与其他 agent 协作，自己内部用 MCP 调工具——<span class="key">A2A 管协作，MCP 管能力，两者天然互补</span>（Google 官方文档的修车厂例子：经理 agent 用 A2A 与供应商 agent 对话，机械工 agent 用 MCP 调诊断仪、查维修手册）</li>
+<li><b>ANP 的差异</b>：MCP 一次性返回全部工具清单，ANP 只给层级链接让 agent 像爬虫一样按需探索——面向跨组织的开放互联网场景，强调去中心化身份与数据主权</li>
+<li><b>行业演进三段论</b>（面试金句）：Agent = LLM（智力爬升）→ LLM + Tools（工具扩展，MCP）→ LLM + Tools + Communication（社会化，A2A/ANP）</li>
+</ul>
+</div></details>
+
+<h3 id="sec8-4">8.4 生成式推荐</h3>
+<details><summary><span class="qno">Q83</span>生成式检索 / Semantic ID：LLM 时代的推荐新范式（TIGER）</summary><div class="ans">
+<p><b>传统范式的瓶颈</b>：双塔/ANN 召回把推荐视为"度量空间里的最近邻搜索"——item 是 embedding 空间里的一个点，泛化依赖 embedding 学得好不好，且<b>候选必须预先存在索引里</b>。</p>
+<p><b>生成式检索（TIGER, Google 2023）</b>：把召回重构为<b>自回归生成</b>——模型根据用户历史直接"写出"要推荐的 item 的 ID。</p>
+<ul>
+<li><b>Semantic ID</b>：核心障碍是 item ID（如数字编号）无语义。TIGER 先对 item 内容 embedding 做 <b>RQ-VAE（残差量化自编码器）</b>，量化成一小串离散 token（如 3~4 个 code），语义相近的 item 共享前缀——这就是 Semantic ID（SID）</li>
+<li><b>生成与检索</b>：把用户交互序列的 SID 当作"语言"训练一个 encoder-decoder（T5 类）模型，推理时 beam search 生成一批 SID，映射回 item 即候选——<span class="key">召回从"空间检索"变成"序列生成"，端到端可微</span></li>
+<li><b>冷启动优势</b>：新 item 没有交互但有内容 → 照样能量化出 SID 进入生成候选（TIGER 实验把 5% item 从训练集移除模拟冷启动，仍显著优于基于语义 KNN 的对照）</li>
+<li><b>2026 工业趋势</b>：Semantic ID 已进入大厂 JD（如"统一排序模型、Semantic ID、多模态表示学习"）——生成式推荐、LLM 语义召回、把推荐序列当语言建模（HSTU/生成式推荐架构）是搜广推面试的新增高频区</li>
+</ul>
+<p><b>答题框架</b>：传统范式一句话 → SID 怎么构造（RQ-VAE）→ 生成式检索流程 → 对比（端到端 vs 两阶段、冷启动、候选只能是生成出的 SID 前缀——覆盖度问题）→ 工业落地现状。</p>
+</div></details>
+
+<h3 id="sec8-5">8.5 Agentic Coding 评测</h3>
+<details><summary><span class="qno">Q84</span>SWE-bench 与 Agent 能力评测：为什么"刷榜"变难了</summary><div class="ans">
+<ul>
+<li><b>SWE-bench 是什么</b>：从真实开源 Python 仓库的 GitHub issue + 对应 PR 构造的数据集——给 agent 一个仓库快照和 issue 描述，要求它<b>自主定位代码、修改并生成 patch，通过仓库自带单测</b>。指标是解决率（resolve rate）。<b>SWE-bench Verified</b> 是经人工筛过、任务描述无歧义的子集，是当前 Agentic Coding 的权威榜单</li>
+<li><b>为什么它是"好 benchmark"</b>：真实（不是人造玩具题）、可验证（单测通过与否客观）、防作弊（改测试用例直接判负）；且有细分榜（SWE-bench Lite/Verified/Multilingual、前端、多模态）</li>
+<li><b>Agent scaffold 影响巨大</b>：同一个模型配不同的 agent 框架（检索策略、编辑工具、自我修复循环、上下文管理）分数差可达十几个点——评测的其实是<b>"模型 × 脚手架"系统</b>，这也是为什么 2026 年 Agent Infra 岗位需求暴涨</li>
+<li><b>其他必知评测</b>：WebArena/OSWorld（操作网页/桌面）、GAIA（通用助理）、Terminal-Bench、长程任务的成功率/步数/成本三角（见 6.3 节 Agent 评测）</li>
+<li><b>面试落点</b>：自己搭过 Agent 的话，用"任务成功率 + 平均步数 + token 成本 + 失败归因"四件套讲评测体系，比只报一个准确率有说服力得多</li>
+</ul>
+</div></details>
+
+<details><summary><span class="qno">Q85</span>2026 面试趋势总结：哪些新知识正在变成"必考"</summary><div class="ans">
+<ul>
+<li><b>大模型架构</b>：MoE（路由/负载均衡/专家并行）、MLA（KV 压缩与 GQA/MQA 对比）、MTP/投机解码、YaRN 长上下文——从"知道名字"升级到"能讲清为什么这么设计"</li>
+<li><b>后训练</b>：GRPO vs PPO vs DPO 的选型逻辑、PRM vs ORM、R1 四阶段流程与蒸馏——"读过 R1 报告并能复述训练流程"已是明牌考点（多家 JD 直接写 Long CoT RL）</li>
+<li><b>Agent 工程</b>：MCP 协议三原语与 A2A 的分工、"评测 + 护栏 + 成本"三位一体、Agentic Coding（SWE-bench）——Agent 岗必考，大模型岗也常问</li>
+<li><b>搜广推</b>：LLM × 推荐融合（生成式推荐、Semantic ID、语义召回）是新增区，传统漏斗八股仍是主体</li>
+<li><b>学习建议</b>：以本库前七章为地基，第八章为差异化——面试官问"最近关注什么"时，能从 MoE 架构一路聊到 Agent 协议生态的人极少，这就是区分度。信息源：DeepSeek-V3/R1 技术报告（arXiv 2412.19437 等）、各厂工程博客、a2a-protocol.org 与 MCP 官方文档</li>
+</ul>
 </div></details>
 </section>
 </main>
