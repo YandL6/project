@@ -330,6 +330,12 @@ body::before {
 .dm-section .dm-knowledge { display: flex; flex-wrap: wrap; gap: 8px; }
 .dm-section .dm-knowledge .tag { font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 8px; background: var(--primary-bg); color: var(--primary); cursor: pointer; transition: var(--transition); }
 .dm-section .dm-knowledge .tag:hover { background: var(--primary); color: #fff; }
+.dm-method { margin-bottom: 16px; }
+.dm-method:last-child { margin-bottom: 0; }
+.dm-method-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 7px; }
+.dm-method-name { font-size: 14px; font-weight: 700; color: var(--gray-800); }
+.dm-method-complexity { font-size: 12px; color: var(--gray-500); font-family: 'SFMono-Regular', Consolas, Menlo, monospace; }
+.dm-code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, 'Courier New', monospace; font-size: 12.5px; line-height: 1.65; margin: 0; padding: 14px 16px; background: #0f172a; color: #e2e8f0; border-radius: var(--radius-sm); overflow-x: auto; white-space: pre; tab-size: 4; -webkit-overflow-scrolling: touch; }
 
 /* ========== Knowledge Sidebar ========== */
 .knowledge-overlay {
