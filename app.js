@@ -9,7 +9,7 @@ const PROB_STORAGE_KEY = 'leetcode_hot100_data';
 const KNOW_STORAGE_KEY = 'leetcode_knowledge_data';
 const CONFUSION_STORAGE_KEY = 'leetcode_confusion_data';
 const TOTAL_HOT100 = 100;
-const DATA_VERSION = 62; // 默认数据版本，更新默认数据时 +1
+const DATA_VERSION = 63; // 默认数据版本，更新默认数据时 +1
 const VERSION_KEY = 'leetcode_data_version';
 let problems = [];
 let knowledge = [];
@@ -729,6 +729,1415 @@ const DEFAULT_PROBLEMS = [
   },
 ];
 
+// 各题多种解法核心代码（按题号索引；每题至多三种）
+const DEFAULT_METHODS = {
+  1: [
+    {
+      name: "方法一：暴力枚举",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "vector<int> twoSum(vector<int>& nums, int target) {\n    for (int i = 0; i < nums.size(); i++)\n        for (int j = i + 1; j < nums.size(); j++)\n            if (nums[i] + nums[j] == target) return {i, j};\n    return {};\n}"
+    },
+    {
+      name: "方法二：哈希表（最优）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;          // 值 -> 下标\n    for (int i = 0; i < nums.size(); i++) {\n        auto it = mp.find(target - nums[i]);\n        if (it != mp.end()) return {it->second, i};\n        mp[nums[i]] = i;                 // 先查再存，避免用到自己\n    }\n    return {};\n}"
+    },
+  ],
+  2: [
+    {
+      name: "方法一：迭代模拟（进位）",
+      complexity: "时间 O(max(m,n)) / 空间 O(1)",
+      code: "ListNode* addTwoNumbers(ListNode* a, ListNode* b) {\n    ListNode dummy(0), *tail = &dummy;\n    int carry = 0;\n    while (a || b || carry) {\n        int s = carry;\n        if (a) { s += a->val; a = a->next; }\n        if (b) { s += b->val; b = b->next; }\n        carry = s / 10;\n        tail->next = new ListNode(s % 10);\n        tail = tail->next;\n    }\n    return dummy.next;\n}"
+    },
+    {
+      name: "方法二：递归",
+      complexity: "时间 O(max(m,n)) / 空间 O(max(m,n))",
+      code: "ListNode* dfs(ListNode* a, ListNode* b, int carry) {\n    if (!a && !b && !carry) return nullptr;\n    int s = carry;\n    if (a) { s += a->val; a = a->next; }\n    if (b) { s += b->val; b = b->next; }\n    ListNode* node = new ListNode(s % 10);\n    node->next = dfs(a, b, s / 10);\n    return node;\n}\nListNode* addTwoNumbers(ListNode* a, ListNode* b) {\n    return dfs(a, b, 0);\n}"
+    },
+  ],
+  3: [
+    {
+      name: "方法一：滑动窗口 + 哈希集合",
+      complexity: "时间 O(n) / 空间 O(min(n,Σ))",
+      code: "int lengthOfLongestSubstring(string s) {\n    unordered_set<char> win;\n    int ans = 0, left = 0;\n    for (int right = 0; right < s.size(); right++) {\n        while (win.count(s[right]))      // 右移收缩到无重复\n            win.erase(s[left++]);\n        win.insert(s[right]);\n        ans = max(ans, right - left + 1);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：滑动窗口 + 哈希下标（左界直接跳）",
+      complexity: "时间 O(n) / 空间 O(min(n,Σ))",
+      code: "int lengthOfLongestSubstring(string s) {\n    unordered_map<char, int> last;       // 字符最后出现的下标\n    int ans = 0, left = 0;\n    for (int right = 0; right < s.size(); right++) {\n        auto it = last.find(s[right]);\n        if (it != last.end() && it->second >= left)\n            left = it->second + 1;       // 一步跳过重复段\n        last[s[right]] = right;\n        ans = max(ans, right - left + 1);\n    }\n    return ans;\n}"
+    },
+  ],
+  4: [
+    {
+      name: "方法一：二分第k小（对较短数组二分分割线）",
+      complexity: "时间 O(log min(m,n)) / 空间 O(1)",
+      code: "double findMedianSortedArrays(vector<int>& a, vector<int>& b) {\n    if (a.size() > b.size()) return findMedianSortedArrays(b, a);\n    int m = a.size(), n = b.size();\n    int lo = 0, hi = m, half = (m + n + 1) / 2;\n    while (lo <= hi) {\n        int i = (lo + hi) / 2;      // a 左半取 i 个\n        int j = half - i;           // b 左半取 j 个\n        int aL = i ? a[i-1] : INT_MIN, aR = i < m ? a[i] : INT_MAX;\n        int bL = j ? b[j-1] : INT_MIN, bR = j < n ? b[j] : INT_MAX;\n        if (aL <= bR && bL <= aR) {                  // 分割线合法\n            if ((m + n) % 2) return max(aL, bL);\n            return (max(aL, bL) + min(aR, bR)) / 2.0;\n        }\n        if (aL > bR) hi = i - 1; else lo = i + 1;\n    }\n    return 0.0;\n}"
+    },
+    {
+      name: "方法二：第k小递归淘汰（每次排除 k/2 个）",
+      complexity: "时间 O(log(m+n)) / 空间 O(log(m+n))",
+      code: "int kth(vector<int>& a, int i, vector<int>& b, int j, int k) {\n    if (i == a.size()) return b[j + k - 1];   // a 用尽\n    if (j == b.size()) return a[i + k - 1];\n    if (k == 1) return min(a[i], b[j]);\n    int half = k / 2;\n    int ai = min((int)a.size(), i + half) - 1;   // a 候选末尾\n    int bj = min((int)b.size(), j + half) - 1;\n    if (a[ai] <= b[bj]) return kth(a, ai + 1, b, j, k - (ai - i + 1));\n    return kth(a, i, b, bj + 1, k - (bj - j + 1));\n}\ndouble findMedianSortedArrays(vector<int>& a, vector<int>& b) {\n    int t = a.size() + b.size();\n    if (t % 2) return kth(a, 0, b, 0, t / 2 + 1);\n    return (kth(a, 0, b, 0, t / 2) + kth(a, 0, b, 0, t / 2 + 1)) / 2.0;\n}"
+    },
+  ],
+  5: [
+    {
+      name: "方法一：中心扩展（推荐）",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "pair<int, int> expand(string& s, int l, int r) {\n    while (l >= 0 && r < s.size() && s[l] == s[r]) { l--; r++; }\n    return {l + 1, r - 1};               // 返回回文区间\n}\nstring longestPalindrome(string s) {\n    int st = 0, en = 0;\n    for (int i = 0; i < s.size(); i++) {\n        auto [a, b] = expand(s, i, i);     // 奇数长度\n        if (b - a > en - st) { st = a; en = b; }\n        auto [c, d] = expand(s, i, i + 1); // 偶数长度\n        if (d - c > en - st) { st = c; en = d; }\n    }\n    return s.substr(st, en - st + 1);\n}"
+    },
+    {
+      name: "方法二：动态规划",
+      complexity: "时间 O(n²) / 空间 O(n²)",
+      code: "string longestPalindrome(string s) {\n    int n = s.size(), st = 0, len = 1;\n    vector<vector<bool>> dp(n, vector<bool>(n, false));\n    for (int i = 0; i < n; i++) dp[i][i] = true;        // 单字符\n    for (int L = 2; L <= n; L++)\n        for (int i = 0; i + L - 1 < n; i++) {\n            int j = i + L - 1;\n            dp[i][j] = (s[i] == s[j]) &&\n                        (L == 2 || dp[i + 1][j - 1]);   // 两端相等且内部回文\n            if (dp[i][j] && L > len) { st = i; len = L; }\n        }\n    return s.substr(st, len);\n}"
+    },
+    {
+      name: "方法三：Manacher（线性算法）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "string longestPalindrome(string s) {\n    string t = \"^#\";                     // 插入 # 统一奇偶\n    for (char c : s) { t += c; t += '#'; }\n    t += '$';\n    int n = t.size(), C = 0, R = 0, best = 0, bestC = 0;\n    vector<int> p(n, 0);                 // p[i]=以 i 为中心的半径\n    for (int i = 1; i < n - 1; i++) {\n        p[i] = (i < R) ? min(p[2 * C - i], R - i) : 0;\n        while (t[i + p[i] + 1] == t[i - p[i] - 1]) p[i]++;\n        if (i + p[i] > R) { C = i; R = i + p[i]; }\n        if (p[i] > best) { best = p[i]; bestC = i; }\n    }\n    int st = (bestC - best) / 2;         // 映射回原串\n    return s.substr(st, best);\n}"
+    },
+  ],
+  10: [
+    {
+      name: "方法一：DP（f[i][j]=s前i个与p前j个是否匹配）",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "bool isMatch(string s, string p) {\n    int m = s.size(), n = p.size();\n    vector<vector<bool>> f(m + 1, vector<bool>(n + 1, false));\n    f[0][0] = true;\n    for (int j = 2; j <= n; j++)          // 空串 vs \"a*b*...\" \n        if (p[j-1] == '*') f[0][j] = f[0][j-2];\n    for (int i = 1; i <= m; i++)\n        for (int j = 1; j <= n; j++) {\n            if (p[j-1] == '*') {\n                f[i][j] = f[i][j-2];      // '*' 匹配 0 次\n                if (p[j-2] == '.' || p[j-2] == s[i-1])\n                    f[i][j] = f[i][j] || f[i-1][j];  // 再多匹配一个\n            }\n            else if (p[j-1] == '.' || p[j-1] == s[i-1])\n                f[i][j] = f[i-1][j-1];\n        }\n    return f[m][n];\n}"
+    },
+    {
+      name: "方法二：记忆化搜索",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "vector<vector<int>> memo;\nstring s, p;\nbool dfs(int i, int j) {          // s[i..] 与 p[j..] 是否匹配\n    if (j == p.size()) return i == s.size();\n    int& res = memo[i][j];\n    if (res != -1) return res;\n    bool first = i < s.size() && (p[j] == '.' || p[j] == s[i]);\n    if (j + 1 < p.size() && p[j + 1] == '*')\n        return res = dfs(i, j + 2)                 // '*' 匹配 0 次\n                  || (first && dfs(i + 1, j));     // 多匹配一个\n    return res = first && dfs(i + 1, j + 1);\n}\nbool isMatch(string s_, string p_) {\n    s = s_; p = p_;\n    memo.assign(s.size() + 1, vector<int>(p.size() + 1, -1));\n    return dfs(0, 0);\n}"
+    },
+  ],
+  11: [
+    {
+      name: "方法一：双指针贪心（最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxArea(vector<int>& h) {\n    int ans = 0, l = 0, r = h.size() - 1;\n    while (l < r) {\n        int area = min(h[l], h[r]) * (r - l);\n        ans = max(ans, area);\n        if (h[l] < h[r]) l++;            // 移动短板才可能更大\n        else r--;\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：暴力枚举",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "int maxArea(vector<int>& h) {\n    int ans = 0;\n    for (int i = 0; i < h.size(); i++)\n        for (int j = i + 1; j < h.size(); j++)\n            ans = max(ans, min(h[i], h[j]) * (j - i));\n    return ans;                          // 超时参考\n}"
+    },
+  ],
+  15: [
+    {
+      name: "方法一：排序 + 固定一个数 + 双指针（推荐）",
+      complexity: "时间 O(n²) / 空间 O(log n)",
+      code: "vector<vector<int>> threeSum(vector<int>& nums) {\n    sort(nums.begin(), nums.end());\n    vector<vector<int>> res;\n    int n = nums.size();\n    for (int i = 0; i < n - 2; i++) {\n        if (i > 0 && nums[i] == nums[i - 1]) continue;   // 去重\n        if (nums[i] + nums[i + 1] + nums[i + 2] > 0) break;      // 剪枝\n        if (nums[i] + nums[n - 2] + nums[n - 1] < 0) continue;\n        int l = i + 1, r = n - 1;\n        while (l < r) {\n            int s = nums[i] + nums[l] + nums[r];\n            if (s < 0) l++;\n            else if (s > 0) r--;\n            else {\n                res.push_back({nums[i], nums[l], nums[r]});\n                while (l < r && nums[l] == nums[l + 1]) l++;     // 去重\n                while (l < r && nums[r] == nums[r - 1]) r--;\n                l++; r--;\n            }\n        }\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：哈希表（排序 + 两数之和哈希化）",
+      complexity: "时间 O(n²) / 空间 O(n)",
+      code: "vector<vector<int>> threeSum(vector<int>& nums) {\n    sort(nums.begin(), nums.end());\n    set<vector<int>> uniq;               // 用 set 全局去重\n    int n = nums.size();\n    for (int i = 0; i < n - 2; i++) {\n        int target = -nums[i];\n        unordered_set<int> seen;\n        for (int j = i + 1; j < n; j++) {\n            if (seen.count(target - nums[j]))\n                uniq.insert({nums[i], target - nums[j], nums[j]});\n            seen.insert(nums[j]);\n        }\n    }\n    return vector<vector<int>>(uniq.begin(), uniq.end());\n}"
+    },
+  ],
+  17: [
+    {
+      name: "方法一：回溯 DFS（推荐）",
+      complexity: "时间 O(4^n · n) / 空间 O(n)",
+      code: "vector<string> res;\nstring path;\nvector<string> board = {\"\", \"\", \"abc\", \"def\", \"ghi\",\n                        \"jkl\", \"mno\", \"pqrs\", \"tuv\", \"wxyz\"};\nvoid dfs(string& digits, int i) {\n    if (i == digits.size()) { res.push_back(path); return; }\n    for (char c : board[digits[i] - '0']) {\n        path.push_back(c);\n        dfs(digits, i + 1);\n        path.pop_back();                 // 回溯\n    }\n}\nvector<string> letterCombinations(string digits) {\n    if (digits.empty()) return {};\n    dfs(digits, 0);\n    return res;\n}"
+    },
+    {
+      name: "方法二：BFS 队列迭代",
+      complexity: "时间 O(4^n · n) / 空间 O(4^n)",
+      code: "vector<string> letterCombinations(string digits) {\n    if (digits.empty()) return {};\n    vector<string> board = {\"\", \"\", \"abc\", \"def\", \"ghi\",\n                            \"jkl\", \"mno\", \"pqrs\", \"tuv\", \"wxyz\"};\n    vector<string> cur = {\"\"};\n    for (char d : digits) {\n        vector<string> next;\n        for (string& s : cur)\n            for (char c : board[d - '0'])\n                next.push_back(s + c);\n        cur = move(next);\n    }\n    return cur;\n}"
+    },
+  ],
+  19: [
+    {
+      name: "方法一：双指针一趟扫描（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "ListNode* removeNthFromEnd(ListNode* head, int n) {\n    ListNode dummy(0, head);             // 哑节点防删头\n    ListNode *fast = &dummy, *slow = &dummy;\n    for (int i = 0; i < n; i++) fast = fast->next;   // 先走 n 步\n    while (fast->next) { fast = fast->next; slow = slow->next; }\n    ListNode* del = slow->next;\n    slow->next = del->next;              // slow 停在倒数第 n+1 个\n    delete del;\n    return dummy.next;\n}"
+    },
+    {
+      name: "方法二：两趟扫描（先求长度）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "ListNode* removeNthFromEnd(ListNode* head, int n) {\n    ListNode dummy(0, head);\n    int len = 0;\n    for (ListNode* p = head; p; p = p->next) len++;\n    ListNode* p = &dummy;\n    for (int i = 0; i < len - n; i++) p = p->next;\n    p->next = p->next->next;\n    return dummy.next;\n}"
+    },
+    {
+      name: "方法三：栈",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "ListNode* removeNthFromEnd(ListNode* head, int n) {\n    ListNode dummy(0, head);\n    stack<ListNode*> st;\n    for (ListNode* p = &dummy; p; p = p->next) st.push(p);\n    for (int i = 0; i < n; i++) st.pop();\n    ListNode* prev = st.top();\n    prev->next = prev->next->next;\n    return dummy.next;\n}"
+    },
+  ],
+  20: [
+    {
+      name: "方法一：栈 + 哈希映射（推荐）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isValid(string s) {\n    unordered_map<char, char> mp{{')','('}, {']','['}, {'}','{'}};\n    stack<char> stk;\n    for (char c : s) {\n        if (mp.count(c)) {               // 右括号\n            if (stk.empty() || stk.top() != mp[c]) return false;\n            stk.pop();\n        } else stk.push(c);              // 左括号\n    }\n    return stk.empty();                  // 栈空才是全部匹配\n}"
+    },
+    {
+      name: "方法二：栈 + 逐类判断（不用哈希）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isValid(string s) {\n    stack<char> stk;\n    for (char c : s) {\n        if (c == '(' || c == '[' || c == '{') stk.push(c);\n        else {\n            if (stk.empty()) return false;\n            char t = stk.top(); stk.pop();\n            if ((c==')'&&t!='(') || (c==']'&&t!='[') || (c=='}'&&t!='{'))\n                return false;\n        }\n    }\n    return stk.empty();\n}"
+    },
+  ],
+  21: [
+    {
+      name: "方法一：迭代 + 哑节点（推荐）",
+      complexity: "时间 O(m+n) / 空间 O(1)",
+      code: "ListNode* mergeTwoLists(ListNode* a, ListNode* b) {\n    ListNode dummy(0), *tail = &dummy;\n    while (a && b) {\n        if (a->val <= b->val) { tail->next = a; a = a->next; }\n        else                  { tail->next = b; b = b->next; }\n        tail = tail->next;\n    }\n    tail->next = a ? a : b;              // 拼上剩余部分\n    return dummy.next;\n}"
+    },
+    {
+      name: "方法二：递归",
+      complexity: "时间 O(m+n) / 空间 O(m+n)（递归栈）",
+      code: "ListNode* mergeTwoLists(ListNode* a, ListNode* b) {\n    if (!a) return b;\n    if (!b) return a;\n    if (a->val <= b->val) {\n        a->next = mergeTwoLists(a->next, b);\n        return a;\n    } else {\n        b->next = mergeTwoLists(a, b->next);\n        return b;\n    }\n}"
+    },
+  ],
+  22: [
+    {
+      name: "方法一：回溯 DFS（推荐）",
+      complexity: "时间 O(4^n / √n)（卡特兰数）/ 空间 O(n)",
+      code: "vector<string> res;\nstring path;\nvoid dfs(int open, int close, int n) {   // open=已用左括号, close=已用右括号\n    if (path.size() == 2 * n) { res.push_back(path); return; }\n    if (open < n)        { path.push_back('('); dfs(open + 1, close, n); path.pop_back(); }\n    if (close < open)    { path.push_back(')'); dfs(open, close + 1, n); path.pop_back(); }\n}\nvector<string> generateParenthesis(int n) {\n    dfs(0, 0, n);\n    return res;\n}"
+    },
+    {
+      name: "方法二：BFS（队列存部分串）",
+      complexity: "时间同上 / 空间 O(4^n / √n)·n",
+      code: "vector<string> generateParenthesis(int n) {\n    queue<pair<string, pair<int, int>>> q;   // {串, {左数, 右数}}\n    q.push({\"\", {0, 0}});\n    vector<string> res;\n    while (!q.empty()) {\n        auto [s, oc] = q.front(); q.pop();\n        if (s.size() == 2 * n) { res.push_back(s); continue; }\n        if (oc.first < n)\n            q.push({s + '(', {oc.first + 1, oc.second}});\n        if (oc.second < oc.first)\n            q.push({s + ')', {oc.first, oc.second + 1}});\n    }\n    return res;\n}"
+    },
+  ],
+  23: [
+    {
+      name: "方法一：小顶堆（K路归并）",
+      complexity: "时间 O(N log k) / 空间 O(k)",
+      code: "struct Cmp {\n    bool operator()(ListNode* a, ListNode* b) { return a->val > b->val; }\n};\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    priority_queue<ListNode*, vector<ListNode*>, Cmp> pq;\n    for (auto p : lists) if (p) pq.push(p);\n    ListNode dummy, *tail = &dummy;\n    while (!pq.empty()) {\n        ListNode* u = pq.top(); pq.pop();\n        tail->next = u; tail = u;\n        if (u->next) pq.push(u->next);\n    }\n    return dummy.next;\n}"
+    },
+    {
+      name: "方法二：分治两两合并",
+      complexity: "时间 O(N log k) / 空间 O(log k)",
+      code: "ListNode* merge2(ListNode* a, ListNode* b) {\n    ListNode dummy, *t = &dummy;\n    while (a && b) {\n        if (a->val <= b->val) { t->next = a; a = a->next; }\n        else { t->next = b; b = b->next; }\n        t = t->next;\n    }\n    t->next = a ? a : b;\n    return dummy.next;\n}\nListNode* mergeRange(vector<ListNode*>& ls, int l, int r) {\n    if (l > r) return nullptr;\n    if (l == r) return ls[l];\n    int mid = (l + r) / 2;\n    return merge2(mergeRange(ls, l, mid), mergeRange(ls, mid + 1, r));\n}\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    return mergeRange(lists, 0, lists.size() - 1);\n}"
+    },
+    {
+      name: "方法三：顺序逐条合并",
+      complexity: "时间 O(Nk) / 空间 O(1)",
+      code: "ListNode* mergeKLists(vector<ListNode*>& lists) {\n    ListNode* head = nullptr;\n    for (auto p : lists) head = merge2(head, p);   // 复用方法二的 merge2\n    return head;\n}"
+    },
+  ],
+  31: [
+    {
+      name: "方法一：两遍扫描（标准算法）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void nextPermutation(vector<int>& a) {\n    int n = a.size(), i = n - 2;\n    while (i >= 0 && a[i] >= a[i + 1]) i--;    // ① 从右找第一个升序对 a[i] < a[i+1]\n    if (i >= 0) {\n        int j = n - 1;\n        while (a[j] <= a[i]) j--;              // ② 找右边最后一个大于 a[i] 的\n        swap(a[i], a[j]);\n    }\n    reverse(a.begin() + i + 1, a.end());       // ③ 后缀反转成升序（最小）\n}"
+    },
+    {
+      name: "方法二：STL 一行（了解即可）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void nextPermutation(vector<int>& a) {\n    next_permutation(a.begin(), a.end());  // C++ 内置，原理即方法一\n}"
+    },
+  ],
+  32: [
+    {
+      name: "方法一：DP（f[i]=以i结尾的最长有效长度）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int longestValidParentheses(string s) {\n    int n = s.size(), ans = 0;\n    vector<int> f(n + 1, 0);   // f[i+1] = 以s[i]结尾的有效长度\n    for (int i = 1; i < n; i++) {\n        if (s[i] == ')') {\n            if (s[i-1] == '(') f[i+1] = f[i-1] + 2;              // \"...()\"\n            else {\n                int j = i - f[i] - 1;   // 跳过中间有效段找 '('\n                if (j >= 0 && s[j] == '(')\n                    f[i+1] = f[i] + 2 + f[j];   // \"()(...)\"\n            }\n            ans = max(ans, f[i+1]);\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：栈（存下标，栈底哨兵）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int longestValidParentheses(string s) {\n    stack<int> st;\n    st.push(-1);               // 哨兵：当前有效段的前一个位置\n    int ans = 0;\n    for (int i = 0; i < s.size(); i++) {\n        if (s[i] == '(') st.push(i);\n        else {\n            st.pop();          // 先弹掉配对的 '(' 或哨兵\n            if (st.empty()) st.push(i);       // 多余的 ')' 成为新哨兵\n            else ans = max(ans, i - st.top());\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：双向计数（贪心，免栈免DP）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int longestValidParentheses(string s) {\n    int ans = 0, l = 0, r = 0;\n    for (char c : s) {          // 从左到右，left>right 时才能结算\n        c == '(' ? l++ : r++;\n        if (l == r) ans = max(ans, 2 * r);\n        else if (r > l) l = r = 0;\n    }\n    l = r = 0;\n    for (int i = s.size() - 1; i >= 0; i--) {  // 反向，处理 \"(()\"\n        s[i] == '(' ? l++ : r++;\n        if (l == r) ans = max(ans, 2 * l);\n        else if (l > r) l = r = 0;\n    }\n    return ans;\n}"
+    },
+  ],
+  33: [
+    {
+      name: "方法一：二分查找（判断哪半有序）",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "int search(vector<int>& nums, int target) {\n    int l = 0, r = nums.size() - 1;\n    while (l <= r) {\n        int m = l + (r - l) / 2;\n        if (nums[m] == target) return m;\n        if (nums[l] <= nums[m]) {        // 左半有序（含相等）\n            if (nums[l] <= target && target < nums[m]) r = m - 1;\n            else l = m + 1;\n        } else {                         // 右半有序\n            if (nums[m] < target && target <= nums[r]) l = m + 1;\n            else r = m - 1;\n        }\n    }\n    return -1;\n}"
+    },
+    {
+      name: "方法二：先二分找旋转点再二分目标",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "int search(vector<int>& nums, int target) {\n    int n = nums.size(), l = 0, r = n - 1;\n    while (l < r) {                      // 找最小值下标（旋转点）\n        int m = (l + r) / 2;\n        if (nums[m] > nums[r]) l = m + 1;\n        else r = m;\n    }\n    int rot = l;                         // 两段各自有序\n    l = 0, r = n - 1;\n    while (l <= r) {\n        int m = (l + r) / 2;\n        int real = (m + rot) % n;        // 映射到原下标\n        if (nums[real] == target) return real;\n        if (nums[real] < target) l = m + 1;\n        else r = m - 1;\n    }\n    return -1;\n}"
+    },
+  ],
+  34: [
+    {
+      name: "方法一：两次二分（左边界 + 右边界，推荐）",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "int lowerBound(vector<int>& a, int t) {  // 第一个 >= t\n    int l = 0, r = a.size();\n    while (l < r) {\n        int m = (l + r) / 2;\n        if (a[m] < t) l = m + 1;\n        else r = m;\n    }\n    return l;\n}\nvector<int> searchRange(vector<int>& a, int t) {\n    int lo = lowerBound(a, t);\n    if (lo == a.size() || a[lo] != t) return {-1, -1};\n    int hi = lowerBound(a, t + 1) - 1;   // 第一个 >= t+1 再减 1\n    return {lo, hi};\n}"
+    },
+    {
+      name: "方法二：STL equal_range",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "vector<int> searchRange(vector<int>& a, int t) {\n    auto [lo, hi] = equal_range(a.begin(), a.end(), t);\n    if (lo == hi) return {-1, -1};\n    return {(int)(lo - a.begin()), (int)(hi - a.begin() - 1)};\n}"
+    },
+  ],
+  39: [
+    {
+      name: "方法一：回溯 + 剪枝（排序后跳过不够减的分支）",
+      complexity: "时间 O(n^(T/M)) / 空间 O(T/M)",
+      code: "vector<vector<int>> res;\nvector<int> path;\nvoid dfs(vector<int>& c, int start, int rest) {\n    if (rest == 0) { res.push_back(path); return; }\n    for (int i = start; i < c.size(); i++) {\n        if (c[i] > rest) break;          // 排序后可剪枝\n        path.push_back(c[i]);\n        dfs(c, i, rest - c[i]);          // 可重复选：传 i 不传 i+1\n        path.pop_back();\n    }\n}\nvector<vector<int>> combinationSum(vector<int>& c, int target) {\n    sort(c.begin(), c.end());\n    dfs(c, 0, target);\n    return res;\n}"
+    },
+    {
+      name: "方法二：DP（完全背包求方案）",
+      complexity: "时间 O(n·T) / 空间 O(n·T)",
+      code: "// f[t] = 凑出 t 的所有方案，每个方案保持下标递增，天然去重\nvector<vector<int>> combinationSum(vector<int>& c, int target) {\n    sort(c.begin(), c.end());\n    vector<vector<vector<int>>> f(target + 1);\n    f[0].push_back({});\n    for (int x : c)                       // 外层物品：保证组合不重（每件可无限用）\n        for (int t = x; t <= target; t++)\n            for (auto& p : f[t - x]) {\n                auto q = p;\n                q.push_back(x);\n                f[t].push_back(move(q));\n            }\n    return f[target];\n}"
+    },
+  ],
+  42: [
+    {
+      name: "方法一：双指针（最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int trap(vector<int>& h) {\n    int l = 0, r = h.size() - 1, lmx = 0, rmx = 0, ans = 0;\n    while (l < r) {\n        lmx = max(lmx, h[l]); rmx = max(rmx, h[r]);\n        if (lmx < rmx) ans += lmx - h[l++];   // 左边最大值更小，左指针处水位由 lmx 决定\n        else ans += rmx - h[r--];\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：DP前后缀最大值",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int trap(vector<int>& h) {\n    int n = h.size();\n    vector<int> lmx(n), rmx(n);\n    lmx[0] = h[0];\n    for (int i = 1; i < n; i++) lmx[i] = max(lmx[i-1], h[i]);\n    rmx[n-1] = h[n-1];\n    for (int i = n - 2; i >= 0; i--) rmx[i] = max(rmx[i+1], h[i]);\n    int ans = 0;\n    for (int i = 0; i < n; i++) ans += min(lmx[i], rmx[i]) - h[i];\n    return ans;\n}"
+    },
+    {
+      name: "方法三：单调栈（横向一层一层接）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int trap(vector<int>& h) {\n    stack<int> st;    // 递减栈\n    int ans = 0;\n    for (int i = 0; i < h.size(); i++) {\n        while (!st.empty() && h[i] > h[st.top()]) {\n            int bottom = st.top(); st.pop();        // 被弹出的是\"坑底\"\n            if (st.empty()) break;\n            int w = i - st.top() - 1;               // 横向接水宽度\n            int dh = min(h[i], h[st.top()]) - h[bottom];\n            ans += w * dh;\n        }\n        st.push(i);\n    }\n    return ans;\n}"
+    },
+  ],
+  46: [
+    {
+      name: "方法一：回溯 + used 数组（推荐）",
+      complexity: "时间 O(n·n!) / 空间 O(n)",
+      code: "vector<vector<int>> res;\nvector<int> path;\nvector<bool> used;\nvoid dfs(vector<int>& nums) {\n    if (path.size() == nums.size()) { res.push_back(path); return; }\n    for (int i = 0; i < nums.size(); i++) {\n        if (used[i]) continue;\n        used[i] = true; path.push_back(nums[i]);\n        dfs(nums);\n        path.pop_back(); used[i] = false;\n    }\n}\nvector<vector<int>> permute(vector<int>& nums) {\n    used.assign(nums.size(), false);\n    dfs(nums);\n    return res;\n}"
+    },
+    {
+      name: "方法二：回溯 + 原地交换",
+      complexity: "时间 O(n·n!) / 空间 O(n)（免 used）",
+      code: "vector<vector<int>> res;\nvoid dfs(vector<int>& a, int k) {        // [0,k) 已固定\n    if (k == a.size()) { res.push_back(a); return; }\n    for (int i = k; i < a.size(); i++) {\n        swap(a[k], a[i]);\n        dfs(a, k + 1);\n        swap(a[k], a[i]);                // 恢复现场\n    }\n}\nvector<vector<int>> permute(vector<int>& nums) {\n    dfs(nums, 0);\n    return res;\n}"
+    },
+    {
+      name: "方法三：字典序算法（next_permutation）",
+      complexity: "时间 O(n·n!) / 空间 O(1)",
+      code: "vector<vector<int>> permute(vector<int>& nums) {\n    sort(nums.begin(), nums.end());\n    vector<vector<int>> res;\n    do { res.push_back(nums); }\n    while (next_permutation(nums.begin(), nums.end()));\n    return res;\n}"
+    },
+  ],
+  48: [
+    {
+      name: "方法一：转置 + 左右翻转（推荐）",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "void rotate(vector<vector<int>>& m) {\n    int n = m.size();\n    for (int i = 0; i < n; i++)          // ① 沿主对角线转置\n        for (int j = i + 1; j < n; j++)\n            swap(m[i][j], m[j][i]);\n    for (auto& row : m)                  // ② 每行左右翻转\n        reverse(row.begin(), row.end());\n}"
+    },
+    {
+      name: "方法二：四元组一轮换（单循环处理 4 个元素）",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "void rotate(vector<vector<int>>& m) {\n    int n = m.size();\n    for (int i = 0; i < n / 2; i++)\n        for (int j = i; j < n - 1 - i; j++) {\n            int t = m[i][j];\n            m[i][j]         = m[n-1-j][i];      // 左 → 上\n            m[n-1-j][i]     = m[n-1-i][n-1-j];  // 下 → 左\n            m[n-1-i][n-1-j] = m[j][n-1-i];      // 右 → 下\n            m[j][n-1-i]     = t;                // 上 → 右\n        }\n}"
+    },
+  ],
+  49: [
+    {
+      name: "方法一：排序串做 key（推荐）",
+      complexity: "时间 O(n·k log k) / 空间 O(n·k)",
+      code: "vector<vector<string>> groupAnagrams(vector<string>& strs) {\n    unordered_map<string, vector<string>> mp;\n    for (string& s : strs) {\n        string key = s;\n        sort(key.begin(), key.end());    // 异位词排序后相同\n        mp[key].push_back(s);\n    }\n    vector<vector<string>> res;\n    for (auto& [k, v] : mp) res.push_back(move(v));\n    return res;\n}"
+    },
+    {
+      name: "方法二：计数串做 key（免排序）",
+      complexity: "时间 O(n·k) / 空间 O(n·k)",
+      code: "vector<vector<string>> groupAnagrams(vector<string>& strs) {\n    unordered_map<string, vector<string>> mp;\n    for (string& s : strs) {\n        int cnt[26] = {0};\n        for (char c : s) cnt[c - 'a']++;\n        string key;\n        for (int i = 0; i < 26; i++)     // \"1,0,2,...\" 形式的键\n            key += to_string(cnt[i]) + \",\";\n        mp[key].push_back(s);\n    }\n    vector<vector<string>> res;\n    for (auto& [k, v] : mp) res.push_back(move(v));\n    return res;\n}"
+    },
+  ],
+  53: [
+    {
+      name: "方法一：贪心（前缀和为负则重开）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxSubArray(vector<int>& nums) {\n    int cur = 0, ans = INT_MIN;\n    for (int x : nums) {\n        cur += x;\n        ans = max(ans, cur);\n        if (cur < 0) cur = 0;   // 负贡献直接舍弃\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：DP（f[i]=以i结尾的最大和）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxSubArray(vector<int>& nums) {\n    int f = 0, ans = INT_MIN;\n    for (int x : nums) {\n        f = max(f + x, x);      // 要么接上前缀，要么自己另起\n        ans = max(ans, f);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：分治（线段树式四元信息合并）",
+      complexity: "时间 O(n) / 空间 O(log n)",
+      code: "struct Node { int sum, pre, suf, best; };  // 区间和/最大前缀/最大后缀/最大子段和\nNode merge(Node& a, Node& b) {\n    Node c;\n    c.sum  = a.sum + b.sum;\n    c.pre  = max(a.pre, a.sum + b.pre);\n    c.suf  = max(b.suf, b.sum + a.suf);\n    c.best = max({a.best, b.best, a.suf + b.pre});\n    return c;\n}\nNode solve(int l, int r, vector<int>& nums) {\n    if (l == r) return {nums[l], nums[l], nums[l], nums[l]};\n    int mid = (l + r) / 2;\n    Node a = solve(l, mid, nums), b = solve(mid + 1, r, nums);\n    return merge(a, b);\n}\nint maxSubArray(vector<int>& nums) { return solve(0, nums.size() - 1, nums).best; }"
+    },
+  ],
+  55: [
+    {
+      name: "方法一：贪心（维护最远可达，最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "bool canJump(vector<int>& nums) {\n    int far = 0;                         // 目前能到达的最远下标\n    for (int i = 0; i < nums.size(); i++) {\n        if (i > far) return false;       // 当前点不可达\n        far = max(far, i + nums[i]);\n        if (far >= nums.size() - 1) return true;\n    }\n    return true;\n}"
+    },
+    {
+      name: "方法二：倒推（从终点往前找可达点）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "bool canJump(vector<int>& nums) {\n    int last = nums.size() - 1;          // 最左的\"确定可达终点\"位置\n    for (int i = nums.size() - 2; i >= 0; i--)\n        if (i + nums[i] >= last) last = i;\n    return last == 0;\n}"
+    },
+  ],
+  56: [
+    {
+      name: "方法一：按左端排序 + 一趟合并（推荐）",
+      complexity: "时间 O(n log n) / 空间 O(log n)",
+      code: "vector<vector<int>> merge(vector<vector<int>>& a) {\n    sort(a.begin(), a.end());            // 按左端点排序\n    vector<vector<int>> res;\n    for (auto& iv : a) {\n        if (res.empty() || res.back()[1] < iv[0])\n            res.push_back(iv);           // 不重叠：新开一段\n        else\n            res.back()[1] = max(res.back()[1], iv[1]);  // 重叠：扩右端\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：差分 + 边界事件（排序扫描线）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "// 每个区间产生 (l, +1) 与 (r+1, -1) 两个事件；计数>0 的时段属于某个区间\nvector<vector<int>> merge(vector<vector<int>>& a) {\n    vector<pair<int,int>> ev;            // (坐标, 增量)\n    for (auto& iv : a) { ev.push_back({iv[0], 1}); ev.push_back({iv[1] + 1, -1}); }\n    sort(ev.begin(), ev.end());\n    vector<vector<int>> res;\n    int cur = 0, st = 0;\n    for (auto& [x, d] : ev) {\n        if (cur == 0) st = x;            // 从无覆盖到覆盖：新区间起点\n        cur += d;\n        if (cur == 0) res.push_back({st, x - 1});  // 覆盖结束：右端是 x-1\n    }\n    return res;\n}"
+    },
+  ],
+  62: [
+    {
+      name: "方法一：二维 DP",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "int uniquePaths(int m, int n) {\n    vector<vector<int>> dp(m, vector<int>(n, 1));  // 首行首列全 1\n    for (int i = 1; i < m; i++)\n        for (int j = 1; j < n; j++)\n            dp[i][j] = dp[i - 1][j] + dp[i][j - 1];\n    return dp[m - 1][n - 1];\n}"
+    },
+    {
+      name: "方法二：一维滚动数组",
+      complexity: "时间 O(mn) / 空间 O(n)",
+      code: "int uniquePaths(int m, int n) {\n    vector<int> dp(n, 1);\n    for (int i = 1; i < m; i++)\n        for (int j = 1; j < n; j++)\n            dp[j] += dp[j - 1];          // dp[j]=上排值, dp[j-1]=左值\n    return dp[n - 1];\n}"
+    },
+    {
+      name: "方法三：组合数学",
+      complexity: "时间 O(min(m,n)) / 空间 O(1)",
+      code: "int uniquePaths(int m, int n) {\n    // 共走 m+n-2 步，选 m-1 步向下：C(m+n-2, m-1)\n    long long res = 1;\n    int t = min(m, n) - 1, total = m + n - 2;\n    for (int i = 1; i <= t; i++)\n        res = res * (total - t + i) / i; // 边乘边除防溢出\n    return res;\n}"
+    },
+  ],
+  64: [
+    {
+      name: "方法一：二维 DP",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "int minPathSum(vector<vector<int>>& g) {\n    int m = g.size(), n = g[0].size();\n    vector<vector<int>> dp(m, vector<int>(n));\n    dp[0][0] = g[0][0];\n    for (int j = 1; j < n; j++) dp[0][j] = dp[0][j - 1] + g[0][j];\n    for (int i = 1; i < m; i++) dp[i][0] = dp[i - 1][0] + g[i][0];\n    for (int i = 1; i < m; i++)\n        for (int j = 1; j < n; j++)\n            dp[i][j] = min(dp[i - 1][j], dp[i][j - 1]) + g[i][j];\n    return dp[m - 1][n - 1];\n}"
+    },
+    {
+      name: "方法二：一维滚动数组",
+      complexity: "时间 O(mn) / 空间 O(n)",
+      code: "int minPathSum(vector<vector<int>>& g) {\n    int m = g.size(), n = g[0].size();\n    vector<int> dp(n, INT_MAX);\n    dp[0] = 0;\n    for (int i = 0; i < m; i++)\n        for (int j = 0; j < n; j++) {\n            if (j == 0) dp[j] += g[i][j];           // 首列只能从上来\n            else dp[j] = min(dp[j], dp[j - 1]) + g[i][j];\n        }\n    return dp[n - 1];\n}"
+    },
+    {
+      name: "方法三：递归 + 记忆化",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "vector<vector<int>> memo, g_;\nint dfs(int i, int j) {\n    if (i == 0 && j == 0) return g_[0][0];\n    if (memo[i][j] != -1) return memo[i][j];\n    int best = INT_MAX;\n    if (i > 0) best = min(best, dfs(i - 1, j));\n    if (j > 0) best = min(best, dfs(i, j - 1));\n    return memo[i][j] = best + g_[i][j];\n}\nint minPathSum(vector<vector<int>>& g) {\n    g_ = g;\n    memo.assign(g.size(), vector<int>(g[0].size(), -1));\n    return dfs(g.size() - 1, g[0].size() - 1);\n}"
+    },
+  ],
+  70: [
+    {
+      name: "方法一：动态规划 + 滚动数组（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int climbStairs(int n) {\n    if (n <= 2) return n;\n    int a = 1, b = 2;                    // dp[1], dp[2]\n    for (int i = 3; i <= n; i++) {\n        int c = a + b;                   // dp[i] = dp[i-1] + dp[i-2]\n        a = b; b = c;\n    }\n    return b;\n}"
+    },
+    {
+      name: "方法二：递归 + 记忆化",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int memo[50];\nint dfs(int n) {\n    if (n <= 2) return n;\n    if (memo[n]) return memo[n];\n    return memo[n] = dfs(n - 1) + dfs(n - 2);\n}\nint climbStairs(int n) { return dfs(n); }"
+    },
+    {
+      name: "方法三：矩阵快速幂",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "// [f(n), f(n-1)] = [[1,1],[1,0]]^(n-1) * [f(1), f(0)]\ntypedef vector<vector<long long>> Mat;\nMat mul(Mat& A, Mat& B) {\n    Mat C(2, vector<long long>(2));\n    for (int i = 0; i < 2; i++)\n        for (int j = 0; j < 2; j++)\n            for (int k = 0; k < 2; k++)\n                C[i][j] += A[i][k] * B[k][j];\n    return C;\n}\nint climbStairs(int n) {\n    Mat R = {{1,0},{0,1}}, P = {{1,1},{1,0}};\n    int e = n - 1;\n    while (e) {                          // 快速幂\n        if (e & 1) R = mul(R, P);\n        P = mul(P, P); e >>= 1;\n    }\n    return R[0][0];\n}"
+    },
+  ],
+  72: [
+    {
+      name: "方法一：二维 DP（标准）",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "int minDistance(string a, string b) {\n    int m = a.size(), n = b.size();\n    vector<vector<int>> dp(m + 1, vector<int>(n + 1));\n    for (int i = 0; i <= m; i++) dp[i][0] = i;     // 全删除\n    for (int j = 0; j <= n; j++) dp[0][j] = j;     // 全插入\n    for (int i = 1; i <= m; i++)\n        for (int j = 1; j <= n; j++)\n            if (a[i - 1] == b[j - 1])\n                dp[i][j] = dp[i - 1][j - 1];       // 不动\n            else\n                dp[i][j] = min({dp[i - 1][j - 1],  // 替换\n                                dp[i - 1][j],      // 删除\n                                dp[i][j - 1]}) + 1;// 插入\n    return dp[m][n];\n}"
+    },
+    {
+      name: "方法二：一维滚动数组",
+      complexity: "时间 O(mn) / 空间 O(n)",
+      code: "int minDistance(string a, string b) {\n    int m = a.size(), n = b.size();\n    vector<int> dp(n + 1);\n    for (int j = 0; j <= n; j++) dp[j] = j;\n    for (int i = 1; i <= m; i++) {\n        int prev = dp[0];                // dp[i-1][j-1]\n        dp[0] = i;\n        for (int j = 1; j <= n; j++) {\n            int tmp = dp[j];             // 暂存 dp[i-1][j]\n            if (a[i - 1] == b[j - 1]) dp[j] = prev;\n            else dp[j] = min({prev, dp[j], dp[j - 1]}) + 1;\n            prev = tmp;\n        }\n    }\n    return dp[n];\n}"
+    },
+  ],
+  75: [
+    {
+      name: "方法一：三指针一趟扫描（荷兰国旗，推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void sortColors(vector<int>& a) {\n    int p0 = 0, p2 = a.size() - 1, i = 0;\n    while (i <= p2) {\n        if (a[i] == 0) swap(a[p0++], a[i++]);\n        else if (a[i] == 2) swap(a[p2--], a[i]);  // 换来的还没看，i 不动\n        else i++;\n    }\n}"
+    },
+    {
+      name: "方法二：计数排序（两趟）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void sortColors(vector<int>& a) {\n    int c0 = 0, c1 = 0, c2 = 0;\n    for (int x : a)\n        x == 0 ? c0++ : x == 1 ? c1++ : c2++;\n    int k = 0;\n    for (int i = 0; i < c0; i++) a[k++] = 0;\n    for (int i = 0; i < c1; i++) a[k++] = 1;\n    for (int i = 0; i < c2; i++) a[k++] = 2;\n}"
+    },
+  ],
+  76: [
+    {
+      name: "方法一：滑动窗口+计数（最优）",
+      complexity: "时间 O(|s|+|t|) / 空间 O(字符集)",
+      code: "string minWindow(string s, string t) {\n    if (s.size() < t.size()) return \"\";\n    int need[128] = {0}, win[128] = {0};\n    for (char c : t) need[c]++;\n    int require = 0;                       // 有需求的字符种数\n    for (int i = 0; i < 128; i++) if (need[i]) require++;\n    int ok = 0;                            // 已满足的字符种数\n    int best = INT_MAX, st = 0;\n    for (int l = 0, r = 0; r < s.size(); r++) {\n        char c = s[r];\n        if (need[c]) {\n            win[c]++;\n            if (win[c] == need[c]) ok++;   // 恰好凑够一种\n        }\n        while (ok == require) {            // 收缩：能删就删\n            if (r - l + 1 < best) { best = r - l + 1; st = l; }\n            char d = s[l++];\n            if (need[d] && --win[d] < need[d]) ok--;  // 删破了一种\n        }\n    }\n    return best == INT_MAX ? \"\" : s.substr(st, best);\n}"
+    },
+    {
+      name: "方法二：滑动窗口（欠账计数，单变量判定）",
+      complexity: "时间 O(|s|+|t|) / 空间 O(字符集)",
+      code: "string minWindow(string s, string t) {\n    unordered_map<char, int> need;\n    for (char c : t) need[c]++;\n    int missing = t.size();              // 还差多少个字符（按个数计）\n    int best = INT_MAX, st = 0;\n    for (int l = 0, r = 0; r < s.size(); r++) {\n        if (need[s[r]] > 0) missing--;   // 右进：有用的字符补欠账\n        need[s[r]]--;                    // 没用的字符变负数\n        while (missing == 0) {\n            if (r - l + 1 < best) { best = r - l + 1; st = l; }\n            need[s[l]]++;                // 左出：还回去\n            if (need[s[l]] > 0) missing++;  // 还的是有用字符，欠账回来了\n            l++;\n        }\n    }\n    return best == INT_MAX ? \"\" : s.substr(st, best);\n}"
+    },
+  ],
+  78: [
+    {
+      name: "方法一：位运算枚举（推荐）",
+      complexity: "时间 O(n·2ⁿ) / 空间 O(n)",
+      code: "vector<vector<int>> subsets(vector<int>& nums) {\n    int n = nums.size();\n    vector<vector<int>> res;\n    for (int mask = 0; mask < (1 << n); mask++) {\n        vector<int> path;\n        for (int i = 0; i < n; i++)\n            if (mask >> i & 1) path.push_back(nums[i]);\n        res.push_back(move(path));\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：回溯 DFS（选/不选）",
+      complexity: "时间 O(n·2ⁿ) / 空间 O(n)",
+      code: "vector<vector<int>> res;\nvector<int> path;\nvoid dfs(vector<int>& nums, int i) {\n    if (i == nums.size()) { res.push_back(path); return; }\n    dfs(nums, i + 1);                   // 不选 nums[i]\n    path.push_back(nums[i]);            // 选 nums[i]\n    dfs(nums, i + 1);\n    path.pop_back();\n}\nvector<vector<int>> subsets(vector<int>& nums) {\n    dfs(nums, 0);\n    return res;\n}"
+    },
+    {
+      name: "方法三：迭代累积",
+      complexity: "时间 O(n·2ⁿ) / 空间 O(1)（不算输出）",
+      code: "vector<vector<int>> subsets(vector<int>& nums) {\n    vector<vector<int>> res = {{}};\n    for (int x : nums) {\n        int sz = res.size();            // 固定当前规模\n        for (int i = 0; i < sz; i++) {\n            res.push_back(res[i]);      // 复制旧子集\n            res.back().push_back(x);    // 追加新元素\n        }\n    }\n    return res;\n}"
+    },
+  ],
+  79: [
+    {
+      name: "方法一：回溯 DFS（网格搜索）",
+      complexity: "时间 O(mn·3^L) / 空间 O(L)",
+      code: "int m, n;\nbool dfs(vector<vector<char>>& b, string& w, int i, int j, int k) {\n    if (i < 0 || i >= m || j < 0 || j >= n || b[i][j] != w[k])\n        return false;\n    if (k == w.size() - 1) return true;\n    char t = b[i][j];\n    b[i][j] = '#';                      // 标记占用（原地 visited）\n    bool ok = dfs(b, w, i + 1, j, k + 1) || dfs(b, w, i - 1, j, k + 1) ||\n              dfs(b, w, i, j + 1, k + 1) || dfs(b, w, i, j - 1, k + 1);\n    b[i][j] = t;                        // 回溯恢复\n    return ok;\n}\nbool exist(vector<vector<char>>& b, string w) {\n    m = b.size(); n = b[0].size();\n    for (int i = 0; i < m; i++)\n        for (int j = 0; j < n; j++)\n            if (dfs(b, w, i, j, 0)) return true;\n    return false;\n}"
+    },
+    {
+      name: "方法二：显式栈回溯（非递归，防爆栈）",
+      complexity: "时间 O(mn·3^L) / 空间 O(L)",
+      code: "// 栈存 (i, j, k, 方向进度)，方向 0~3 表示下一个要试的方向\nstruct St { int i, j, k, d; };\nbool exist(vector<vector<char>>& b, string w) {\n    int m = b.size(), n = b[0].size(), L = w.size();\n    int dx[4] = {1, -1, 0, 0}, dy[4] = {0, 0, 1, -1};\n    for (int i = 0; i < m; i++)\n        for (int j = 0; j < n; j++) {\n            if (b[i][j] != w[0]) continue;\n            vector<St> stk;\n            b[i][j] = '#';\n            stk.push_back({i, j, 0, 0});\n            while (!stk.empty()) {\n                St& t = stk.back();\n                if (t.k == L - 1) {         // 搜到末尾，成功\n                    // 恢复现场后返回\n                    for (auto& s : stk) b[s.i][s.j] = w[s.k];\n                    return true;\n                }\n                if (t.d == 4) {              // 四个方向都试完：回溯\n                    b[t.i][t.j] = w[t.k];\n                    stk.pop_back();\n                    continue;\n                }\n                int ni = t.i + dx[t.d], nj = t.j + dy[t.d];\n                t.d++;                      // 先推进方向再尝试\n                if (ni >= 0 && ni < m && nj >= 0 && nj < n &&\n                    b[ni][nj] == w[t.k + 1]) {\n                    b[ni][nj] = '#';\n                    stk.push_back({ni, nj, t.k + 1, 0});\n                }\n            }\n        }\n    return false;\n}"
+    },
+  ],
+  84: [
+    {
+      name: "方法一：单调栈（哨兵封底）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int largestRectangleArea(vector<int>& h) {\n    stack<int> st;                    // 递增栈，存下标\n    int ans = 0;\n    vector<int> a(h.begin(), h.end());\n    a.push_back(0);                   // 末尾哨兵，强制清空栈\n    for (int i = 0; i < a.size(); i++) {\n        while (!st.empty() && a[i] < a[st.top()]) {\n            int cur = st.top(); st.pop();   // 弹出的柱作为矩形的高\n            int w = st.empty() ? i : i - st.top() - 1;\n            ans = max(ans, a[cur] * w);\n        }\n        st.push(i);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：前后缀双向扫描（每根柱向两边扩展）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int largestRectangleArea(vector<int>& h) {\n    int n = h.size();\n    vector<int> L(n), R(n);           // 左右第一根更矮柱的下标\n    stack<int> st;\n    for (int i = 0; i < n; i++) {\n        while (!st.empty() && h[st.top()] >= h[i]) st.pop();\n        L[i] = st.empty() ? -1 : st.top();\n        st.push(i);\n    }\n    st = stack<int>();\n    for (int i = n - 1; i >= 0; i--) {\n        while (!st.empty() && h[st.top()] >= h[i]) st.pop();\n        R[i] = st.empty() ? n : st.top();\n        st.push(i);\n    }\n    int ans = 0;\n    for (int i = 0; i < n; i++) ans = max(ans, h[i] * (R[i] - L[i] - 1));\n    return ans;\n}"
+    },
+    {
+      name: "方法三：中心扩展（无栈，跳着走）",
+      complexity: "时间 O(n) 均摊 / 空间 O(1)",
+      code: "int largestRectangleArea(vector<int>& h) {\n    int n = h.size(), ans = 0;\n    for (int i = 0; i < n; i++) {\n        int l = i, r = i;\n        while (l - 1 >= 0 && h[l-1] >= h[i]) l--;   // 左扩\n        while (r + 1 < n  && h[r+1] >= h[i]) r++;   // 右扩\n        ans = max(ans, h[i] * (r - l + 1));\n    }\n    return ans;\n}   // 最坏 O(n²)，如递增序列退化"
+    },
+  ],
+  85: [
+    {
+      name: "方法一：DP高度数组+逐行84题单调栈",
+      complexity: "时间 O(mn) / 空间 O(n)",
+      code: "int maximalRectangle(vector<string>& mat) {\n    if (mat.empty()) return 0;\n    int n = mat[0].size(), ans = 0;\n    vector<int> h(n + 1, 0);           // 末尾补0做哨兵\n    for (auto& row : mat) {\n        for (int j = 0; j < n; j++)\n            h[j] = (row[j] == '1') ? h[j] + 1 : 0;  // 柱高：连续1向上延伸\n        stack<int> st;                 // 每行跑一遍柱状图最大矩形\n        for (int j = 0; j <= n; j++) {\n            while (!st.empty() && h[j] < h[st.top()]) {\n                int cur = st.top(); st.pop();\n                int w = st.empty() ? j : j - st.top() - 1;\n                ans = max(ans, h[cur] * w);\n            }\n            st.push(j);\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：DP左右边界扩展（每格记录连续1宽度）",
+      complexity: "时间 O(mn²) / 空间 O(n)",
+      code: "int maximalRectangle(vector<string>& mat) {\n    if (mat.empty()) return 0;\n    int m = mat.size(), n = mat[0].size(), ans = 0;\n    vector<int> h(n), l(n), r(n, n);   // 高度 / 左边界 / 右边界\n    for (int i = 0; i < m; i++) {\n        int curL = 0, curR = n;\n        for (int j = 0; j < n; j++)\n            h[j] = mat[i][j] == '1' ? h[j] + 1 : 0;\n        for (int j = 0; j < n; j++)    // 左边界：本行0重置，1取上继承\n            if (mat[i][j] == '1') l[j] = max(l[j], curL);\n            else { l[j] = 0; curL = j + 1; }\n        for (int j = n - 1; j >= 0; j--)\n            if (mat[i][j] == '1') r[j] = min(r[j], curR);\n            else { r[j] = n; curR = j; }\n        for (int j = 0; j < n; j++)\n            ans = max(ans, h[j] * (r[j] - l[j]));\n    }\n    return ans;\n}"
+    },
+  ],
+  94: [
+    {
+      name: "方法一：递归",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "void dfs(TreeNode* root, vector<int>& res) {\n    if (!root) return;\n    dfs(root->left, res);\n    res.push_back(root->val);\n    dfs(root->right, res);\n}\nvector<int> inorderTraversal(TreeNode* root) {\n    vector<int> res; dfs(root, res); return res;\n}"
+    },
+    {
+      name: "方法二：迭代（显式栈）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> inorderTraversal(TreeNode* root) {\n    vector<int> res;\n    stack<TreeNode*> stk;\n    TreeNode* cur = root;\n    while (cur || !stk.empty()) {\n        while (cur) { stk.push(cur); cur = cur->left; }  // 左路入栈\n        cur = stk.top(); stk.pop();\n        res.push_back(cur->val);                         // 访问\n        cur = cur->right;                                // 转右\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法三：Morris 遍历（O(1) 空间）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "vector<int> inorderTraversal(TreeNode* root) {\n    vector<int> res;\n    TreeNode *cur = root, *pre;\n    while (cur) {\n        if (!cur->left) {                // 无左子：访问并转右\n            res.push_back(cur->val);\n            cur = cur->right;\n        } else {\n            pre = cur->left;             // 找中序前驱（左子最右节点）\n            while (pre->right && pre->right != cur) pre = pre->right;\n            if (!pre->right) {           // 建线索，回根\n                pre->right = cur; cur = cur->left;\n            } else {                     // 线索已存在：撤销并访问\n                pre->right = nullptr;\n                res.push_back(cur->val);\n                cur = cur->right;\n            }\n        }\n    }\n    return res;\n}"
+    },
+  ],
+  96: [
+    {
+      name: "方法一：动态规划（卡特兰数递推，推荐）",
+      complexity: "时间 O(n²) / 空间 O(n)",
+      code: "int numTrees(int n) {\n    vector<int> dp(n + 1);\n    dp[0] = dp[1] = 1;\n    for (int i = 2; i <= n; i++)        // i 个节点的树\n        for (int j = 1; j <= i; j++)    // j 为根：左 j-1 个、右 i-j 个\n            dp[i] += dp[j - 1] * dp[i - j];\n    return dp[n];\n}"
+    },
+    {
+      name: "方法二：卡特兰数通项",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int numTrees(int n) {\n    // C₀=1, Cₙ₊₁ = Cₙ·2(2n+1)/(n+2)\n    long long c = 1;\n    for (int i = 0; i < n; i++)\n        c = c * 2 * (2 * i + 1) / (i + 2);\n    return c;\n}"
+    },
+  ],
+  98: [
+    {
+      name: "方法一：递归（上下界收缩，推荐）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "bool dfs(TreeNode* root, long lo, long hi) {\n    if (!root) return true;\n    if (root->val <= lo || root->val >= hi) return false;\n    return dfs(root->left, lo, root->val) &&\n           dfs(root->right, root->val, hi);\n}\nbool isValidBST(TreeNode* root) {\n    return dfs(root, LONG_MIN, LONG_MAX);\n}"
+    },
+    {
+      name: "方法二：中序遍历必须严格递增",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "long prev = LONG_MIN;\nbool isValidBST(TreeNode* root) {        // 反中序也可以\n    if (!root) return true;\n    if (!isValidBST(root->left)) return false;\n    if (root->val <= prev) return false; // 中序严格递增\n    prev = root->val;\n    return isValidBST(root->right);\n}"
+    },
+    {
+      name: "方法三：迭代中序（显式栈）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "bool isValidBST(TreeNode* root) {\n    stack<TreeNode*> st;\n    long prev = LONG_MIN;\n    TreeNode* cur = root;\n    while (cur || !st.empty()) {\n        while (cur) { st.push(cur); cur = cur->left; }\n        cur = st.top(); st.pop();\n        if (cur->val <= prev) return false;\n        prev = cur->val;\n        cur = cur->right;\n    }\n    return true;\n}"
+    },
+  ],
+  101: [
+    {
+      name: "方法一：递归（DFS 比较镜像子树）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isMirror(TreeNode* a, TreeNode* b) {\n    if (!a && !b) return true;\n    if (!a || !b || a->val != b->val) return false;\n    return isMirror(a->left, b->right) && isMirror(a->right, b->left);\n}\nbool isSymmetric(TreeNode* root) {\n    return !root || isMirror(root->left, root->right);\n}"
+    },
+    {
+      name: "方法二：迭代（队列 BFS，成对入队）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isSymmetric(TreeNode* root) {\n    if (!root) return true;\n    queue<TreeNode*> q;\n    q.push(root->left); q.push(root->right);\n    while (!q.empty()) {\n        TreeNode *a = q.front(); q.pop();\n        TreeNode *b = q.front(); q.pop();\n        if (!a && !b) continue;\n        if (!a || !b || a->val != b->val) return false;\n        q.push(a->left);  q.push(b->right);   // 外侧配对\n        q.push(a->right); q.push(b->left);    // 内侧配对\n    }\n    return true;\n}"
+    },
+    {
+      name: "方法三：迭代（显式栈 DFS）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isSymmetric(TreeNode* root) {\n    if (!root) return true;\n    stack<TreeNode*> st;\n    st.push(root->left); st.push(root->right);\n    while (!st.empty()) {\n        TreeNode *a = st.top(); st.pop();\n        TreeNode *b = st.top(); st.pop();\n        if (!a && !b) continue;\n        if (!a || !b || a->val != b->val) return false;\n        st.push(a->left);  st.push(b->right);\n        st.push(a->right); st.push(b->left);\n    }\n    return true;\n}"
+    },
+  ],
+  102: [
+    {
+      name: "方法一：BFS 队列（推荐）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<vector<int>> levelOrder(TreeNode* root) {\n    vector<vector<int>> res;\n    if (!root) return res;\n    queue<TreeNode*> q; q.push(root);\n    while (!q.empty()) {\n        int sz = q.size();\n        vector<int> level;\n        for (int i = 0; i < sz; i++) {\n            TreeNode* t = q.front(); q.pop();\n            level.push_back(t->val);\n            if (t->left)  q.push(t->left);\n            if (t->right) q.push(t->right);\n        }\n        res.push_back(move(level));\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：DFS 递归（按深度分层）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "void dfs(TreeNode* root, int d, vector<vector<int>>& res) {\n    if (!root) return;\n    if (d == res.size()) res.push_back({});   // 新层\n    res[d].push_back(root->val);\n    dfs(root->left, d + 1, res);\n    dfs(root->right, d + 1, res);\n}\nvector<vector<int>> levelOrder(TreeNode* root) {\n    vector<vector<int>> res;\n    dfs(root, 0, res);\n    return res;\n}"
+    },
+  ],
+  104: [
+    {
+      name: "方法一：DFS 递归（分治，推荐）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "int maxDepth(TreeNode* root) {\n    if (!root) return 0;\n    return max(maxDepth(root->left), maxDepth(root->right)) + 1;\n}"
+    },
+    {
+      name: "方法二：BFS 层序遍历",
+      complexity: "时间 O(n) / 空间 O(w)（w 为最大宽度）",
+      code: "int maxDepth(TreeNode* root) {\n    if (!root) return 0;\n    queue<TreeNode*> q; q.push(root);\n    int depth = 0;\n    while (!q.empty()) {\n        int sz = q.size();               // 固定当前层大小\n        depth++;\n        for (int i = 0; i < sz; i++) {\n            TreeNode* t = q.front(); q.pop();\n            if (t->left)  q.push(t->left);\n            if (t->right) q.push(t->right);\n        }\n    }\n    return depth;\n}"
+    },
+    {
+      name: "方法三：迭代（栈存 节点+深度）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int maxDepth(TreeNode* root) {\n    if (!root) return 0;\n    stack<pair<TreeNode*, int>> st;\n    st.push({root, 1});\n    int ans = 0;\n    while (!st.empty()) {\n        auto [node, d] = st.top(); st.pop();\n        ans = max(ans, d);\n        if (node->left)  st.push({node->left,  d + 1});\n        if (node->right) st.push({node->right, d + 1});\n    }\n    return ans;\n}"
+    },
+  ],
+  105: [
+    {
+      name: "方法一：递归 + 哈希定位根（推荐）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "unordered_map<int, int> idx;           // 中序值 -> 下标\nTreeNode* build(vector<int>& pre, vector<int>& in, int pl, int il, int ir) {\n    if (il > ir) return nullptr;\n    TreeNode* root = new TreeNode(pre[pl]);\n    int k = idx[pre[pl]];               // 根在中序中的位置\n    int leftLen = k - il;               // 左子树节点数\n    root->left  = build(pre, in, pl + 1, il, k - 1);\n    root->right = build(pre, in, pl + 1 + leftLen, k + 1, ir);\n    return root;\n}\nTreeNode* buildTree(vector<int>& pre, vector<int>& in) {\n    for (int i = 0; i < in.size(); i++) idx[in[i]] = i;\n    return build(pre, in, 0, 0, in.size() - 1);\n}"
+    },
+    {
+      name: "方法二：迭代栈（前序栈 + 中序指针）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "TreeNode* buildTree(vector<int>& pre, vector<int>& in) {\n    if (pre.empty()) return nullptr;\n    TreeNode* root = new TreeNode(pre[0]);\n    stack<TreeNode*> st; st.push(root);\n    int inIdx = 0;\n    for (int i = 1; i < pre.size(); i++) {\n        TreeNode* node = st.top();\n        if (node->val != in[inIdx]) {   // 还在左链上\n            node->left = new TreeNode(pre[i]);\n            st.push(node->left);\n        } else {                        // 左链走完，弹栈回溯接右子\n            while (!st.empty() && st.top()->val == in[inIdx]) {\n                node = st.top(); st.pop(); inIdx++;\n            }\n            node->right = new TreeNode(pre[i]);\n            st.push(node->right);\n        }\n    }\n    return root;\n}"
+    },
+  ],
+  114: [
+    {
+      name: "方法一：反向中序（右-左-根，倒序接链）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "TreeNode* prev = nullptr;\nvoid flatten(TreeNode* root) {          // 逆前序遍历：先处理右子树\n    if (!root) return;\n    flatten(root->right);               // 先展开右子树\n    flatten(root->left);                // 再展开左子树\n    root->right = prev;                 // 当前节点接上已展开的链\n    root->left = nullptr;\n    prev = root;\n}"
+    },
+    {
+      name: "方法二：前序遍历 + 重组（数组暂存）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "void flatten(TreeNode* root) {\n    vector<TreeNode*> order;\n    stack<TreeNode*> st;\n    TreeNode* cur = root;\n    while (cur || !st.empty()) {        // 迭代前序\n        while (cur) { order.push_back(cur); st.push(cur); cur = cur->left; }\n        cur = st.top(); st.pop();\n        cur = cur->right;\n    }\n    for (int i = 1; i < order.size(); i++) {\n        order[i - 1]->left = nullptr;\n        order[i - 1]->right = order[i];\n    }\n}"
+    },
+    {
+      name: "方法三：迭代 O(1) 空间（寻找前驱）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void flatten(TreeNode* root) {\n    TreeNode* cur = root;\n    while (cur) {\n        if (cur->left) {\n            TreeNode* p = cur->left;    // 左子树最右节点=前序前驱\n            while (p->right) p = p->right;\n            p->right = cur->right;      // 原右子接在前驱后\n            cur->right = cur->left;     // 左子提为右子\n            cur->left = nullptr;\n        }\n        cur = cur->right;               // 处理下一个\n    }\n}"
+    },
+  ],
+  121: [
+    {
+      name: "方法一：贪心（一次遍历维护历史最低价，最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxProfit(vector<int>& prices) {\n    int minPrice = INT_MAX, profit = 0;\n    for (int p : prices) {\n        minPrice = min(minPrice, p);     // 截至今天的最低买入价\n        profit = max(profit, p - minPrice);\n    }\n    return profit;\n}"
+    },
+    {
+      name: "方法二：动态规划（状态机）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxProfit(vector<int>& prices) {\n    int hold = INT_MIN, sold = 0;        // hold=至今持有股票的最大现金\n    for (int p : prices) {\n        hold = max(hold, -p);            // 今天买入（只允许一次）\n        sold = max(sold, hold + p);      // 今天卖出\n    }\n    return sold;\n}"
+    },
+    {
+      name: "方法三：暴力枚举",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "int maxProfit(vector<int>& prices) {\n    int ans = 0;\n    for (int i = 0; i < prices.size(); i++)\n        for (int j = i + 1; j < prices.size(); j++)\n            ans = max(ans, prices[j] - prices[i]);\n    return ans;                          // n 大时超时，仅思路参考\n}"
+    },
+  ],
+  124: [
+    {
+      name: "方法一：DFS后序遍历（维护拐弯路径）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "int ans = INT_MIN;\n// 返回：以u为端点向下的最大链和（只能选一边儿子）\nint dfs(TreeNode* u) {\n    if (!u) return 0;\n    int l = max(dfs(u->left), 0);   // 负贡献剪掉\n    int r = max(dfs(u->right), 0);\n    ans = max(ans, u->val + l + r); // 拐弯：左链+根+右链，只更新答案不上传\n    return u->val + max(l, r);\n}\nint maxPathSum(TreeNode* root) { dfs(root); return ans; }"
+    },
+    {
+      name: "方法二：显式DP四元合并（同53分治，区间换成子树）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "struct Node { int sum, chain, best; };  // 子树和 / 从根向下最大链 / 子树内最佳拐弯\nint ans;\nNode dfs(TreeNode* u) {\n    if (!u) return {0, 0, INT_MIN / 2};\n    Node L = dfs(u->left), R = dfs(u->right);\n    Node c;\n    c.sum = L.sum + R.sum + u->val;\n    c.chain = u->val + max(0, max(L.chain, R.chain));\n    c.best = max({L.best, R.best,\n                  u->val + max(0, L.chain) + max(0, R.chain)});\n    return c;\n}\nint maxPathSum(TreeNode* root) { return dfs(root).best; }"
+    },
+  ],
+  128: [
+    {
+      name: "方法一：哈希集合（只从序列起点数，最优）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int longestConsecutive(vector<int>& a) {\n    unordered_set<int> s(a.begin(), a.end());\n    int ans = 0;\n    for (int x : s)\n        if (!s.count(x - 1)) {           // x 是某段连续序列的起点\n            int y = x;\n            while (s.count(y + 1)) y++;  // 向后扩展\n            ans = max(ans, y - x + 1);\n        }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：排序 + 一趟统计",
+      complexity: "时间 O(n log n) / 空间 O(1)",
+      code: "int longestConsecutive(vector<int>& a) {\n    if (a.empty()) return 0;\n    sort(a.begin(), a.end());\n    int ans = 1, run = 1;\n    for (int i = 1; i < a.size(); i++) {\n        if (a[i] == a[i - 1]) continue;  // 跳过重复\n        if (a[i] == a[i - 1] + 1) run++;\n        else run = 1;\n        ans = max(ans, run);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：并查集（相邻数字合并）",
+      complexity: "时间 O(n·α) / 空间 O(n)",
+      code: "unordered_map<int,int> fa, sz;\nint find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }\nint longestConsecutive(vector<int>& a) {\n    for (int x : a) { fa[x] = x; sz[x] = 1; }   // 去重由 map 保证\n    int ans = 0;\n    for (int x : a) {\n        if (fa.count(x + 1)) {\n            int rx = find(x), ry = find(x + 1);\n            if (rx != ry) {\n                fa[rx] = ry;\n                sz[ry] += sz[rx];\n            }\n        }\n    }\n    for (auto& [k, v] : sz) ans = max(ans, v);\n    return ans;\n}"
+    },
+  ],
+  136: [
+    {
+      name: "方法一：异或（最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int singleNumber(vector<int>& nums) {\n    int res = 0;\n    for (int x : nums) res ^= x;         // a^a=0, a^0=a，成对抵消\n    return res;\n}"
+    },
+    {
+      name: "方法二：哈希表计数",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int singleNumber(vector<int>& nums) {\n    unordered_map<int, int> cnt;\n    for (int x : nums) cnt[x]++;\n    for (auto& [v, c] : cnt)\n        if (c == 1) return v;\n    return -1;\n}"
+    },
+    {
+      name: "方法三：排序 + 相邻配对",
+      complexity: "时间 O(n log n) / 空间 O(1)",
+      code: "int singleNumber(vector<int>& nums) {\n    sort(nums.begin(), nums.end());\n    for (int i = 0; i + 1 < nums.size(); i += 2)\n        if (nums[i] != nums[i + 1]) return nums[i];\n    return nums.back();                  // 落单的在末尾\n}"
+    },
+  ],
+  139: [
+    {
+      name: "方法一：动态规划（一维，推荐）",
+      complexity: "时间 O(n³)（含 substr）/ 空间 O(n)",
+      code: "bool wordBreak(string s, vector<string>& dict) {\n    unordered_set<string> d(dict.begin(), dict.end());\n    int n = s.size();\n    vector<bool> dp(n + 1, false);       // dp[i]=前 i 个字符可拆\n    dp[0] = true;\n    for (int i = 1; i <= n; i++)\n        for (int j = 0; j < i; j++)\n            if (dp[j] && d.count(s.substr(j, i - j))) {\n                dp[i] = true; break;\n            }\n    return dp[n];\n}"
+    },
+    {
+      name: "方法二：记忆化 DFS",
+      complexity: "时间 O(n³) / 空间 O(n)",
+      code: "unordered_set<string> d;\nvector<int> memo;\nbool dfs(string& s, int i) {             // s[i..] 能否拆分\n    if (i == s.size()) return true;\n    if (memo[i] != -1) return memo[i];\n    for (int j = i + 1; j <= s.size(); j++)\n        if (d.count(s.substr(i, j - i)) && dfs(s, j))\n            return memo[i] = true;\n    return memo[i] = false;\n}\nbool wordBreak(string s, vector<string>& dict) {\n    d = unordered_set<string>(dict.begin(), dict.end());\n    memo.assign(s.size() + 1, -1);\n    return dfs(s, 0);\n}"
+    },
+    {
+      name: "方法三：BFS（起点队列 + 剪枝）",
+      complexity: "时间 O(n³) / 空间 O(n)",
+      code: "bool wordBreak(string s, vector<string>& dict) {\n    unordered_set<string> d(dict.begin(), dict.end());\n    int n = s.size();\n    vector<bool> vis(n + 1, false);\n    queue<int> q; q.push(0);\n    while (!q.empty()) {\n        int i = q.front(); q.pop();\n        if (i == n) return true;\n        for (int j = i + 1; j <= n; j++) {\n            if (vis[j]) continue;\n            if (d.count(s.substr(i, j - i))) {\n                vis[j] = true;\n                q.push(j);\n            }\n        }\n    }\n    return false;\n}"
+    },
+  ],
+  141: [
+    {
+      name: "方法一：快慢指针（Floyd 判圈，最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "bool hasCycle(ListNode *head) {\n    ListNode *slow = head, *fast = head;\n    while (fast && fast->next) {\n        slow = slow->next;               // 每次 1 步\n        fast = fast->next->next;         // 每次 2 步\n        if (slow == fast) return true;   // 相遇必有环\n    }\n    return false;                        // fast 到头则无环\n}"
+    },
+    {
+      name: "方法二：哈希集合记录访问节点",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool hasCycle(ListNode *head) {\n    unordered_set<ListNode*> seen;\n    for (ListNode* p = head; p; p = p->next) {\n        if (!seen.insert(p).second) return true;  // 重复访问\n    }\n    return false;\n}"
+    },
+  ],
+  142: [
+    {
+      name: "方法一：快慢指针 + 数学（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "ListNode *detectCycle(ListNode *head) {\n    ListNode *slow = head, *fast = head;\n    while (fast && fast->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if (slow == fast) {              // 相遇后：头与相遇点同速走\n            ListNode* p = head;\n            while (p != slow) { p = p->next; slow = slow->next; }\n            return p;                    // 再相遇即入口\n        }\n    }\n    return nullptr;\n}"
+    },
+    {
+      name: "方法二：哈希集合",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "ListNode *detectCycle(ListNode *head) {\n    unordered_set<ListNode*> seen;\n    for (ListNode* p = head; p; p = p->next)\n        if (!seen.insert(p).second) return p;   // 第一个重复节点\n    return nullptr;\n}"
+    },
+  ],
+  146: [
+    {
+      name: "方法一：哈希表 + 双向链表（推荐）",
+      complexity: "get/put 均 O(1) / 空间 O(capacity)",
+      code: "class LRUCache {\n    list<pair<int,int>> dq;              // {key, value}，front=最近使用\n    unordered_map<int, list<pair<int,int>>::iterator> mp;\n    int cap;\npublic:\n    LRUCache(int c) : cap(c) {}\n    int get(int k) {\n        auto it = mp.find(k);\n        if (it == mp.end()) return -1;           // find 只读不污染\n        dq.splice(dq.begin(), dq, it->second);   // 移到队首 O(1)\n        return it->second->second;\n    }\n    void put(int k, int v) {\n        auto it = mp.find(k);\n        if (it != mp.end()) {                    // 已存在：更新+提前\n            it->second->second = v;\n            dq.splice(dq.begin(), dq, it->second);\n            return;\n        }\n        if ((int)dq.size() == cap) {             // 淘汰队尾\n            mp.erase(dq.back().first);\n            dq.pop_back();\n        }\n        dq.emplace_front(k, v);\n        mp[k] = dq.begin();\n    }\n};"
+    },
+    {
+      name: "方法二：手写双向链表（不依赖 STL，面试白板常用）",
+      complexity: "get/put 均 O(1) / 空间 O(capacity)",
+      code: "struct Node { int k, v; Node *pre, *nxt; };\nclass LRUCache {\n    Node *head, *tail;                    // 两个哨兵，中间放真实节点\n    unordered_map<int, Node*> mp;\n    int cap;\n    void detach(Node* u) { u->pre->nxt = u->nxt; u->nxt->pre = u->pre; }\n    void pushFront(Node* u) {             // 插到 head 之后\n        u->nxt = head->nxt; u->pre = head;\n        head->nxt->pre = u; head->nxt = u;\n    }\npublic:\n    LRUCache(int c) : cap(c) {\n        head = new Node(); tail = new Node();\n        head->nxt = tail; tail->pre = head;\n    }\n    int get(int k) {\n        auto it = mp.find(k);\n        if (it == mp.end()) return -1;\n        detach(it->second); pushFront(it->second);  // 移到最前\n        return it->second->v;\n    }\n    void put(int k, int v) {\n        auto it = mp.find(k);\n        if (it != mp.end()) { detach(it->second); it->second->v = v; pushFront(it->second); return; }\n        if ((int)mp.size() == cap) {       // 淘汰 tail 前一个（最久未用）\n            Node* del = tail->pre;\n            detach(del); mp.erase(del->k); delete del;\n        }\n        Node* u = new Node{k, v};\n        pushFront(u); mp[k] = u;\n    }\n};"
+    },
+  ],
+  148: [
+    {
+      name: "方法一：归并排序（递归 + 快慢指针找中点）",
+      complexity: "时间 O(n log n) / 空间 O(log n)",
+      code: "ListNode* merge(ListNode* a, ListNode* b) {\n    ListNode dummy(0), *t = &dummy;\n    while (a && b) {\n        if (a->val <= b->val) { t->next = a; a = a->next; }\n        else                  { t->next = b; b = b->next; }\n        t = t->next;\n    }\n    t->next = a ? a : b;\n    return dummy.next;\n}\nListNode* sortList(ListNode* head) {\n    if (!head || !head->next) return head;\n    ListNode *slow = head, *fast = head->next;  // 找中点断开\n    while (fast && fast->next) {\n        slow = slow->next; fast = fast->next->next;\n    }\n    ListNode* mid = slow->next;\n    slow->next = nullptr;\n    return merge(sortList(head), sortList(mid));\n}"
+    },
+    {
+      name: "方法二：自底向上归并（O(1) 空间）",
+      complexity: "时间 O(n log n) / 空间 O(1)",
+      code: "ListNode* merge(ListNode* a, ListNode* b) {\n    ListNode dummy(0), *t = &dummy;\n    while (a && b) {\n        if (a->val <= b->val) { t->next = a; a = a->next; }\n        else                  { t->next = b; b = b->next; }\n        t = t->next;\n    }\n    t->next = a ? a : b;\n    return dummy.next;\n}\nListNode* sortList(ListNode* head) {\n    int n = 0;\n    for (ListNode* p = head; p; p = p->next) n++;\n    ListNode dummy(0, head);\n    for (int len = 1; len < n; len <<= 1) {     // 步长倍增\n        ListNode *prev = &dummy, *cur = dummy.next;\n        while (cur) {\n            ListNode *a = cur, *b = nullptr;\n            // 切出第一段长 len\n            ListNode* p = a;\n            for (int i = 1; i < len && p->next; i++) p = p->next;\n            b = p->next; p->next = nullptr;\n            // 切出第二段长 len\n            cur = b;\n            if (cur) {\n                p = b;\n                for (int i = 1; i < len && p->next; i++) p = p->next;\n                cur = p->next; p->next = nullptr;\n            }\n            prev->next = merge(a, b);            // 接回主链\n            while (prev->next) prev = prev->next;\n        }\n    }\n    return dummy.next;\n}"
+    },
+  ],
+  152: [
+    {
+      name: "方法一：DP（同时维护最大积与最小积）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxProduct(vector<int>& a) {\n    int mx = a[0], mn = a[0], ans = a[0];\n    for (int i = 1; i < a.size(); i++) {\n        int x = a[i];\n        int nmx = max({x, mx * x, mn * x});   // 三选一：重启/接大/接小翻正\n        int nmn = min({x, mx * x, mn * x});\n        mx = nmx; mn = nmn;\n        ans = max(ans, mx);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：正反两遍扫描",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxProduct(vector<int>& a) {\n    int ans = INT_MIN, prod = 1;\n    for (int x : a) {                   // 从左到右\n        prod *= x;\n        ans = max(ans, prod);\n        if (x == 0) prod = 1;           // 遇 0 重置\n    }\n    prod = 1;\n    for (int i = a.size() - 1; i >= 0; i--) {  // 从右到左补反面情形\n        prod *= a[i];\n        ans = max(ans, prod);\n        if (a[i] == 0) prod = 1;\n    }\n    return ans;\n}"
+    },
+  ],
+  155: [
+    {
+      name: "方法一：辅助栈同步（推荐）",
+      complexity: "所有操作 O(1) / 空间 O(n)",
+      code: "class MinStack {\n    stack<long long> st;                 // 存差值：st.top()=当前值-minVal\n    long long minVal;\npublic:\n    MinStack() : minVal(0) {}\n    void push(int x) {\n        if (st.empty()) { st.push(0); minVal = x; }\n        else {\n            st.push((long long)x - minVal);   // 差值可能溢出 int\n            if (x < minVal) minVal = x;       // 负差值说明产生新最小\n        }\n    }\n    void pop() {\n        long long d = st.top(); st.pop();\n        if (d < 0) minVal = minVal - d;  // 弹的是最小值，回退上一个最小\n    }\n    int top() {\n        long long d = st.top();\n        return d < 0 ? (int)minVal : (int)(minVal + d);\n    }\n    int getMin() { return (int)minVal; }\n};"
+    },
+    {
+      name: "方法二：双栈（数据栈 + 最小值栈等长）",
+      complexity: "所有操作 O(1) / 空间 O(n)",
+      code: "class MinStack {\n    stack<int> st, mn;                   // mn 与 st 等长对齐\npublic:\n    void push(int x) {\n        st.push(x);\n        mn.push(mn.empty() ? x : min(x, mn.top()));\n    }\n    void pop() { st.pop(); mn.pop(); }   // 必须同步弹\n    int top() { return st.top(); }\n    int getMin() { return mn.top(); }\n};"
+    },
+    {
+      name: "方法三：节点内嵌最小值（链表栈）",
+      complexity: "所有操作 O(1) / 空间 O(n)",
+      code: "class MinStack {\n    struct Node { int val, mn; Node* next; };\n    Node* head = nullptr;\npublic:\n    void push(int x) {\n        head = new Node{x, head ? min(x, head->mn) : x, head};\n    }\n    void pop() { Node* p = head; head = head->next; delete p; }\n    int top() { return head->val; }\n    int getMin() { return head->mn; }\n};"
+    },
+  ],
+  160: [
+    {
+      name: "方法一：双指针切换链表（最优）",
+      complexity: "时间 O(m+n) / 空间 O(1)",
+      code: "ListNode *getIntersectionNode(ListNode *a, ListNode *b) {\n    ListNode *pA = a, *pB = b;\n    while (pA != pB) {\n        pA = pA ? pA->next : b;          // A 走完切到 B\n        pB = pB ? pB->next : a;          // B 走完切到 A\n    }\n    return pA;                           // 相遇点或同时为 null\n}"
+    },
+    {
+      name: "方法二：哈希集合",
+      complexity: "时间 O(m+n) / 空间 O(m)",
+      code: "ListNode *getIntersectionNode(ListNode *a, ListNode *b) {\n    unordered_set<ListNode*> seen;\n    for (ListNode* p = a; p; p = p->next) seen.insert(p);\n    for (ListNode* p = b; p; p = p->next)\n        if (seen.count(p)) return p;\n    return nullptr;\n}"
+    },
+    {
+      name: "方法三：长度差对齐",
+      complexity: "时间 O(m+n) / 空间 O(1)",
+      code: "ListNode *getIntersectionNode(ListNode *a, ListNode *b) {\n    int la = 0, lb = 0;\n    for (ListNode* p = a; p; p = p->next) la++;\n    for (ListNode* p = b; p; p = p->next) lb++;\n    while (la > lb) { a = a->next; la--; }      // 长的先走差值步\n    while (lb > la) { b = b->next; lb--; }\n    while (a != b) { a = a->next; b = b->next; }\n    return a;\n}"
+    },
+  ],
+  169: [
+    {
+      name: "方法一：Boyer-Moore 投票（最优）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int majorityElement(vector<int>& nums) {\n    int candidate = 0, count = 0;\n    for (int x : nums) {\n        if (count == 0) candidate = x;   // 前面全部抵消，换候选人\n        count += (x == candidate) ? 1 : -1;\n    }\n    return candidate;                    // 多数元素必存活\n}"
+    },
+    {
+      name: "方法二：哈希表计数",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int majorityElement(vector<int>& nums) {\n    unordered_map<int, int> cnt;\n    int half = nums.size() / 2;\n    for (int x : nums)\n        if (++cnt[x] > half) return x;\n    return -1;\n}"
+    },
+    {
+      name: "方法三：排序取中位",
+      complexity: "时间 O(n log n) / 空间 O(log n)",
+      code: "int majorityElement(vector<int>& nums) {\n    sort(nums.begin(), nums.end());\n    return nums[nums.size() / 2];        // 超过一半必占中间\n}"
+    },
+  ],
+  198: [
+    {
+      name: "方法一：DP 滚动数组（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int rob(vector<int>& a) {\n    int take = 0, skip = 0;              // take=偷当前家的最大, skip=不偷\n    for (int x : a) {\n        int nt = skip + x;               // 偷当前：前一家必须不偷\n        int ns = max(take, skip);        // 不偷当前：前一家随意\n        take = nt; skip = ns;\n    }\n    return max(take, skip);\n}"
+    },
+    {
+      name: "方法二：记忆化递归",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> memo;\nint dfs(vector<int>& a, int i) {         // 从 i 开始能偷的最大值\n    if (i < 0) return 0;\n    if (memo[i] != -1) return memo[i];\n    return memo[i] = max(dfs(a, i - 1),          // 不偷 i\n                         dfs(a, i - 2) + a[i]);  // 偷 i\n}\nint rob(vector<int>& a) {\n    memo.assign(a.size(), -1);\n    return dfs(a, a.size() - 1);\n}"
+    },
+  ],
+  200: [
+    {
+      name: "方法一：DFS 淹岛（推荐）",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "void dfs(vector<vector<char>>& g, int i, int j) {\n    if (i < 0 || i >= g.size() || j < 0 || j >= g[0].size()\n        || g[i][j] != '1') return;\n    g[i][j] = '0';                      // 访问过的陆地淹没\n    dfs(g, i + 1, j); dfs(g, i - 1, j);\n    dfs(g, i, j + 1); dfs(g, i, j - 1);\n}\nint numIslands(vector<vector<char>>& g) {\n    int cnt = 0;\n    for (int i = 0; i < g.size(); i++)\n        for (int j = 0; j < g[0].size(); j++)\n            if (g[i][j] == '1') { cnt++; dfs(g, i, j); }\n    return cnt;\n}"
+    },
+    {
+      name: "方法二：BFS 淹岛",
+      complexity: "时间 O(mn) / 空间 O(min(m,n))",
+      code: "int numIslands(vector<vector<char>>& g) {\n    int m = g.size(), n = g[0].size(), cnt = 0;\n    int dx[] = {1, -1, 0, 0}, dy[] = {0, 0, 1, -1};\n    for (int i = 0; i < m; i++)\n        for (int j = 0; j < n; j++)\n            if (g[i][j] == '1') {\n                cnt++;\n                queue<pair<int,int>> q;\n                g[i][j] = '0'; q.push({i, j});\n                while (!q.empty()) {\n                    auto [x, y] = q.front(); q.pop();\n                    for (int d = 0; d < 4; d++) {\n                        int nx = x + dx[d], ny = y + dy[d];\n                        if (nx >= 0 && nx < m && ny >= 0 && ny < n\n                            && g[nx][ny] == '1') {\n                            g[nx][ny] = '0';       // 入队即标记\n                            q.push({nx, ny});\n                        }\n                    }\n                }\n            }\n    return cnt;\n}"
+    },
+    {
+      name: "方法三：并查集（相邻陆地点合并）",
+      complexity: "时间 O(mn·α) / 空间 O(mn)",
+      code: "vector<int> fa;\nint find(int x) { return fa[x] == x ? x : fa[x] = find(fa[x]); }\nvoid unite(int a, int b) { fa[find(a)] = find(b); }\nint numIslands(vector<vector<char>>& g) {\n    int m = g.size(), n = g[0].size();\n    fa.resize(m * n);\n    iota(fa.begin(), fa.end(), 0);\n    int cnt = 0;\n    for (int i = 0; i < m; i++)\n        for (int j = 0; j < n; j++)\n            if (g[i][j] == '1') {\n                cnt++;\n                if (i + 1 < m && g[i+1][j] == '1')      // 只需向右向下\n                    if (find((i+1)*n+j) != find(i*n+j)) { unite((i+1)*n+j, i*n+j); cnt--; }\n                if (j + 1 < n && g[i][j+1] == '1')\n                    if (find(i*n+j+1) != find(i*n+j)) { unite(i*n+j+1, i*n+j); cnt--; }\n            }\n    return cnt;\n}"
+    },
+  ],
+  206: [
+    {
+      name: "方法一：迭代三指针（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "ListNode* reverseList(ListNode* head) {\n    ListNode *prev = nullptr, *curr = head;\n    while (curr) {\n        ListNode* next = curr->next;     // ① 保存后继\n        curr->next = prev;               // ② 掉头\n        prev = curr;                     // ③ prev 前移\n        curr = next;                     // ④ curr 前移\n    }\n    return prev;\n}"
+    },
+    {
+      name: "方法二：递归",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "ListNode* reverseList(ListNode* head) {\n    if (!head || !head->next) return head;\n    ListNode* newHead = reverseList(head->next);  // 反转后面\n    head->next->next = head;            // 后继指回自己\n    head->next = nullptr;               // 自己断尾\n    return newHead;\n}"
+    },
+  ],
+  207: [
+    {
+      name: "方法一：BFS 拓扑排序（Kahn 入度法，推荐）",
+      complexity: "时间 O(V+E) / 空间 O(V+E)",
+      code: "bool canFinish(int n, vector<vector<int>>& pre) {\n    vector<vector<int>> g(n);\n    vector<int> indeg(n, 0);\n    for (auto& e : pre) {               // e = [课程, 先修]\n        g[e[1]].push_back(e[0]);\n        indeg[e[0]]++;\n    }\n    queue<int> q;\n    for (int i = 0; i < n; i++)\n        if (indeg[i] == 0) q.push(i);\n    int seen = 0;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        seen++;\n        for (int v : g[u])\n            if (--indeg[v] == 0) q.push(v);\n    }\n    return seen == n;                   // 全部出队=无环\n}"
+    },
+    {
+      name: "方法二：DFS 三色标记判环",
+      complexity: "时间 O(V+E) / 空间 O(V+E)",
+      code: "vector<vector<int>> g;\nvector<int> color;                      // 0 未访 1 在递归栈 2 完成\nbool dfs(int u) {\n    color[u] = 1;\n    for (int v : g[u]) {\n        if (color[v] == 1) return false;   // 遇到灰色=有环\n        if (color[v] == 0 && !dfs(v)) return false;\n    }\n    color[u] = 2;\n    return true;\n}\nbool canFinish(int n, vector<vector<int>>& pre) {\n    g.assign(n, {}); color.assign(n, 0);\n    for (auto& e : pre) g[e[1]].push_back(e[0]);\n    for (int i = 0; i < n; i++)\n        if (color[i] == 0 && !dfs(i)) return false;\n    return true;\n}"
+    },
+  ],
+  208: [
+    {
+      name: "方法一：数组版字典树（推荐）",
+      complexity: "单次操作 O(L) / 空间 O(NL·26)",
+      code: "class Trie {\n    struct Node { Node* ch[26] = {}; bool end = false; };\n    Node* root;\npublic:\n    Trie() : root(new Node()) {}\n    void insert(string w) {\n        Node* p = root;\n        for (char c : w) {\n            int i = c - 'a';\n            if (!p->ch[i]) p->ch[i] = new Node();\n            p = p->ch[i];\n        }\n        p->end = true;\n    }\n    Node* find_(string& s) {            // 走到末尾节点，走不到返回空\n        Node* p = root;\n        for (char c : s) {\n            p = p->ch[c - 'a'];\n            if (!p) return nullptr;\n        }\n        return p;\n    }\n    bool search(string w) {\n        Node* p = find_(w);\n        return p && p->end;\n    }\n    bool startsWith(string pfx) {\n        return find_(pfx) != nullptr;\n    }\n};"
+    },
+    {
+      name: "方法二：哈希表版字典树",
+      complexity: "单次操作 O(L) / 空间 O(NL)（按需开点）",
+      code: "class Trie {\n    struct Node {\n        unordered_map<char, Node*> ch;\n        bool end = false;\n    };\n    Node* root;\npublic:\n    Trie() : root(new Node()) {}\n    void insert(string w) {\n        Node* p = root;\n        for (char c : w)\n            p = p->ch.count(c) ? p->ch[c] : (p->ch[c] = new Node());\n        p->end = true;\n    }\n    bool search(string w) {\n        Node* p = root;\n        for (char c : w) {\n            if (!p->ch.count(c)) return false;\n            p = p->ch[c];\n        }\n        return p->end;\n    }\n    bool startsWith(string pfx) {\n        Node* p = root;\n        for (char c : pfx) {\n            if (!p->ch.count(c)) return false;\n            p = p->ch[c];\n        }\n        return true;\n    }\n};"
+    },
+  ],
+  215: [
+    {
+      name: "方法一：快速选择（partition，平均最优）",
+      complexity: "平均 O(n) / 空间 O(1)",
+      code: "int quickSelect(vector<int>& a, int l, int r, int k) {\n    if (l == r) return a[l];\n    int p = a[l + rand() % (r - l + 1)];         // 随机基准\n    int i = l - 1, j = r + 1;\n    while (i < j) {                              // 三路分区思想\n        do i++; while (a[i] > p);\n        do j--; while (a[j] < p);\n        if (i < j) swap(a[i], a[j]);\n    }\n    if (k <= j) return quickSelect(a, l, j, k);  // 排名在左段\n    return quickSelect(a, j + 1, r, k);\n}\nint findKthLargest(vector<int>& nums, int k) {\n    return quickSelect(nums, 0, nums.size() - 1, k);\n}"
+    },
+    {
+      name: "方法二：小顶堆（维持 k 个元素）",
+      complexity: "时间 O(n log k) / 空间 O(k)",
+      code: "int findKthLargest(vector<int>& nums, int k) {\n    priority_queue<int, vector<int>, greater<int>> pq;\n    for (int x : nums) {\n        pq.push(x);\n        if ((int)pq.size() > k) pq.pop();  // 弹掉最小\n    }\n    return pq.top();\n}"
+    },
+    {
+      name: "方法三：大顶堆（全部入堆）",
+      complexity: "时间 O(n + k log n) / 空间 O(n)",
+      code: "int findKthLargest(vector<int>& nums, int k) {\n    priority_queue<int> pq(nums.begin(), nums.end());  // 建堆 O(n)\n    for (int i = 1; i < k; i++) pq.pop();\n    return pq.top();\n}"
+    },
+  ],
+  221: [
+    {
+      name: "方法一：动态规划（右下角扩展，推荐）",
+      complexity: "时间 O(mn) / 空间 O(mn)",
+      code: "int maximalSquare(vector<vector<char>>& m) {\n    int R = m.size(), C = m[0].size(), side = 0;\n    vector<vector<int>> dp(R, vector<int>(C, 0));\n    for (int i = 0; i < R; i++)\n        for (int j = 0; j < C; j++)\n            if (m[i][j] == '1') {\n                if (i == 0 || j == 0) dp[i][j] = 1;\n                else dp[i][j] = min({dp[i-1][j], dp[i][j-1],\n                                    dp[i-1][j-1]}) + 1;\n                side = max(side, dp[i][j]);      // 可扩展的最大边长\n            }\n    return side * side;\n}"
+    },
+    {
+      name: "方法二：暴力 + 每行柱状图（配合 84 题单调栈）",
+      complexity: "时间 O(mn·min(m,n)) / 空间 O(n)",
+      code: "int maximalSquare(vector<vector<char>>& g) {\n    int R = g.size(), C = g[0].size(), side = 0;\n    vector<int> h(C, 0);                 // 当前行柱高\n    for (int i = 0; i < R; i++) {\n        for (int j = 0; j < C; j++)\n            h[j] = (g[i][j] == '1') ? h[j] + 1 : 0;\n        // 对每行求\"柱高 >= k 的最大连续宽度\"，k 为尝试边长\n        for (int k = side + 1; k <= min(i + 1, C); k++) {\n            int run = 0, ok = 0;\n            for (int j = 0; j < C; j++) {\n                run = (h[j] >= k) ? run + 1 : 0;\n                if (run >= k) { ok = 1; break; }\n            }\n            if (ok) side = k; else break;\n        }\n    }\n    return side * side;\n}"
+    },
+  ],
+  226: [
+    {
+      name: "方法一：DFS 递归",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "TreeNode* invertTree(TreeNode* root) {\n    if (!root) return nullptr;\n    swap(root->left, root->right);       // 交换左右子树\n    invertTree(root->left);\n    invertTree(root->right);\n    return root;\n}"
+    },
+    {
+      name: "方法二：BFS 层序遍历",
+      complexity: "时间 O(n) / 空间 O(w)",
+      code: "TreeNode* invertTree(TreeNode* root) {\n    if (!root) return nullptr;\n    queue<TreeNode*> q; q.push(root);\n    while (!q.empty()) {\n        TreeNode* t = q.front(); q.pop();\n        swap(t->left, t->right);\n        if (t->left)  q.push(t->left);\n        if (t->right) q.push(t->right);\n    }\n    return root;\n}"
+    },
+    {
+      name: "方法三：显式栈 DFS",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "TreeNode* invertTree(TreeNode* root) {\n    if (!root) return nullptr;\n    stack<TreeNode*> st; st.push(root);\n    while (!st.empty()) {\n        TreeNode* t = st.top(); st.pop();\n        swap(t->left, t->right);\n        if (t->left)  st.push(t->left);\n        if (t->right) st.push(t->right);\n    }\n    return root;\n}"
+    },
+  ],
+  234: [
+    {
+      name: "方法一：复制到数组 + 双指针",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "bool isPalindrome(ListNode* head) {\n    vector<int> v;\n    for (ListNode* p = head; p; p = p->next) v.push_back(p->val);\n    for (int i = 0, j = v.size() - 1; i < j; i++, j--)\n        if (v[i] != v[j]) return false;\n    return true;\n}"
+    },
+    {
+      name: "方法二：快慢指针找中点 + 反转后半（O(1) 空间）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "bool isPalindrome(ListNode* head) {\n    ListNode *slow = head, *fast = head;\n    while (fast->next && fast->next->next) {  // 找中点\n        slow = slow->next; fast = fast->next->next;\n    }\n    ListNode *prev = nullptr, *curr = slow->next;\n    slow->next = nullptr;                // 断开前半\n    while (curr) {                       // 反转后半\n        ListNode* nx = curr->next; curr->next = prev;\n        prev = curr; curr = nx;\n    }\n    for (ListNode *p = head, *q = prev; p && q; p = p->next, q = q->next)\n        if (p->val != q->val) return false;\n    return true;\n}"
+    },
+    {
+      name: "方法三：递归（模拟倒序指针）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "ListNode* front;                        // 全局前向指针\nbool dfs(ListNode* back) {              // 递归返回时即倒序\n    if (!back) return true;\n    if (!dfs(back->next)) return false;\n    if (front->val != back->val) return false;\n    front = front->next;\n    return true;\n}\nbool isPalindrome(ListNode* head) {\n    front = head;\n    return dfs(head);\n}"
+    },
+  ],
+  236: [
+    {
+      name: "方法一：递归后序（推荐）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {\n    if (!root || root == p || root == q) return root;\n    TreeNode* L = lowestCommonAncestor(root->left, p, q);\n    TreeNode* R = lowestCommonAncestor(root->right, p, q);\n    if (L && R) return root;            // 分居两侧：root 即 LCA\n    return L ? L : R;                   // 都在一侧：答案在下面\n}"
+    },
+    {
+      name: "方法二：哈希父指针 + 路径相交",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "unordered_map<TreeNode*, TreeNode*> fa;\nunordered_set<TreeNode*> visited;\nvoid dfs(TreeNode* root) {\n    if (!root) return;\n    if (root->left)  { fa[root->left] = root;  dfs(root->left); }\n    if (root->right) { fa[root->right] = root; dfs(root->right); }\n}\nTreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {\n    fa[root] = nullptr;\n    dfs(root);\n    while (p) { visited.insert(p); p = fa[p]; }  // p 到根的路径\n    while (q && !visited.count(q)) q = fa[q];    // q 第一个交点\n    return q;\n}"
+    },
+  ],
+  238: [
+    {
+      name: "方法一：前缀积 × 后缀积（推荐）",
+      complexity: "时间 O(n) / 空间 O(n)（不算输出）",
+      code: "vector<int> productExceptSelf(vector<int>& a) {\n    int n = a.size();\n    vector<int> res(n);\n    int left = 1;\n    for (int i = 0; i < n; i++) {        // res[i] = 左边所有数之积\n        res[i] = left;\n        left *= a[i];\n    }\n    int right = 1;\n    for (int i = n - 1; i >= 0; i--) {   // 再乘上右边所有数之积\n        res[i] *= right;\n        right *= a[i];\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：除法 + 零计数",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "vector<int> productExceptSelf(vector<int>& a) {\n    long long prod = 1;\n    int zeros = 0, zIdx = -1;\n    for (int i = 0; i < a.size(); i++) {\n        if (a[i] == 0) { zeros++; zIdx = i; }\n        else prod *= a[i];\n    }\n    int n = a.size();\n    vector<int> res(n, 0);\n    if (zeros >= 2) return res;          // 两个零：全 0\n    if (zeros == 1) { res[zIdx] = prod; return res; }\n    for (int i = 0; i < n; i++) res[i] = prod / a[i];\n    return res;\n}"
+    },
+  ],
+  239: [
+    {
+      name: "方法一：单调递减双端队列（最优）",
+      complexity: "时间 O(n) / 空间 O(k)",
+      code: "vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n    deque<int> dq;          // 存下标，对应值严格递减\n    vector<int> ans;\n    for (int i = 0; i < nums.size(); i++) {\n        if (!dq.empty() && dq.front() <= i - k) dq.pop_front();  // 过期出队\n        while (!dq.empty() && nums[dq.back()] <= nums[i]) dq.pop_back(); // 干不掉的进不来\n        dq.push_back(i);\n        if (i >= k - 1) ans.push_back(nums[dq.front()]);\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：堆（延迟删除）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n    priority_queue<pair<int,int>> pq;   // (值, 下标)\n    vector<int> ans;\n    for (int i = 0; i < nums.size(); i++) {\n        pq.push({nums[i], i});\n        if (i >= k - 1) {\n            while (pq.top().second <= i - k) pq.pop();  // 惰性踢出窗外元素\n            ans.push_back(pq.top().first);\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：分块（前后缀最大值，ST表思想）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n    int n = nums.size();\n    vector<int> pre(n), suf(n);\n    for (int i = 0; i < n; i++)                     // 块内前缀最大\n        pre[i] = (i % k == 0) ? nums[i] : max(pre[i-1], nums[i]);\n    for (int i = n - 1; i >= 0; i--)                // 块内后缀最大\n        suf[i] = (i % k == k - 1 || i == n - 1) ? nums[i] : max(suf[i+1], nums[i]);\n    vector<int> ans;\n    for (int i = 0; i + k <= n; i++)\n        ans.push_back(max(suf[i], pre[i + k - 1])); // 跨块时两段拼起来\n    return ans;\n}"
+    },
+  ],
+  240: [
+    {
+      name: "方法一：Z形查找（右上角出发）",
+      complexity: "时间 O(m+n) / 空间 O(1)",
+      code: "bool searchMatrix(vector<vector<int>>& mat, int target) {\n    int m = mat.size(), n = mat[0].size();\n    int i = 0, j = n - 1;               // 右上角\n    while (i < m && j >= 0) {\n        if (mat[i][j] == target) return true;\n        if (mat[i][j] > target) j--;    // 该列整列都更大，排除列\n        else i++;                       // 该行整行都更小，排除行\n    }\n    return false;\n}"
+    },
+    {
+      name: "方法二：逐行二分",
+      complexity: "时间 O(m log n) / 空间 O(1)",
+      code: "bool searchMatrix(vector<vector<int>>& mat, int target) {\n    for (auto& row : mat) {\n        if (row[0] > target) break;\n        if (binary_search(row.begin(), row.end(), target)) return true;\n    }\n    return false;\n}"
+    },
+  ],
+  253: [
+    {
+      name: "方法一：小顶堆（按开始时间扫描，堆顶存结束时间）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "int minMeetingRooms(vector<vector<int>>& iv) {\n    sort(iv.begin(), iv.end());\n    priority_queue<int, vector<int>, greater<int>> pq;  // 正在用的会议室的结束时间\n    for (auto& x : iv) {\n        if (!pq.empty() && pq.top() <= x[0]) pq.pop();  // 最早结束的已空闲，复用\n        pq.push(x[1]);\n    }\n    return pq.size();\n}"
+    },
+    {
+      name: "方法二：差分数组（时间轴计数）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "int minMeetingRooms(vector<vector<int>>& iv) {\n    map<int, int> diff;\n    for (auto& x : iv) { diff[x[0]]++; diff[x[1]]--; }\n    int cur = 0, ans = 0;\n    for (auto& [t, d] : diff) { cur += d; ans = max(ans, cur); }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：双指针（开始/结束各自排序）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "int minMeetingRooms(vector<vector<int>>& iv) {\n    vector<int> st, en;\n    for (auto& x : iv) { st.push_back(x[0]); en.push_back(x[1]); }\n    sort(st.begin(), st.end()); sort(en.begin(), en.end());\n    int rooms = 0, j = 0;                     // j 指向最早未释放的结束时间\n    for (int i = 0; i < st.size(); i++) {\n        if (st[i] >= en[j]) { rooms--; j++; } // 有会议结束，释放一间\n        rooms++;\n    }\n    return rooms;\n}"
+    },
+  ],
+  279: [
+    {
+      name: "方法一：DP（完全背包）",
+      complexity: "时间 O(n√n) / 空间 O(n)",
+      code: "int numSquares(int n) {\n    vector<int> f(n + 1, INT_MAX);\n    f[0] = 0;\n    for (int i = 1; i <= n; i++)\n        for (int j = 1; j * j <= i; j++)\n            f[i] = min(f[i], f[i - j * j] + 1);\n    return f[n];\n}"
+    },
+    {
+      name: "方法二：BFS（图最短路，每个数到 0 的边权为 1）",
+      complexity: "时间 O(n√n) / 空间 O(n)",
+      code: "int numSquares(int n) {\n    vector<int> sq;\n    for (int j = 1; j * j <= n; j++) sq.push_back(j * j);\n    vector<int> dist(n + 1, -1);\n    queue<int> q;\n    q.push(n); dist[n] = 0;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        if (u == 0) return dist[0];\n        for (int s : sq) {\n            if (s > u) break;\n            if (dist[u - s] == -1) { dist[u - s] = dist[u] + 1; q.push(u - s); }\n        }\n    }\n    return -1;\n}"
+    },
+    {
+      name: "方法三：数学（四平方和定理）",
+      complexity: "时间 O(√n) / 空间 O(1)",
+      code: "bool isSq(int x) { int r = sqrt(x); return r * r == x; }\nint numSquares(int n) {\n    // 拉格朗日四平方定理：答案 ≤ 4\n    if (isSq(n)) return 1;\n    // 勒让德三平方定理：4^a*(8b+7) 型才需要 4\n    while (n % 4 == 0) n /= 4;\n    if (n % 8 == 7) return 4;\n    for (int i = 1; i * i <= n; i++)   // 剩下检查 2\n        if (isSq(n - i * i)) return 2;\n    return 3;\n}"
+    },
+  ],
+  283: [
+    {
+      name: "方法一：双指针交换（快排 partition 思想）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void moveZeroes(vector<int>& nums) {\n    int slow = 0;                        // [0,slow) 均非零\n    for (int fast = 0; fast < nums.size(); fast++) {\n        if (nums[fast] != 0)\n            swap(nums[slow++], nums[fast]);\n    }\n}"
+    },
+    {
+      name: "方法二：双指针先覆盖后补零",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "void moveZeroes(vector<int>& nums) {\n    int slow = 0;\n    for (int fast = 0; fast < nums.size(); fast++)\n        if (nums[fast] != 0) nums[slow++] = nums[fast];\n    while (slow < nums.size()) nums[slow++] = 0;  // 尾部补零\n}"
+    },
+  ],
+  287: [
+    {
+      name: "方法一：二分答案+计数（抽屉原理）",
+      complexity: "时间 O(n log n) / 空间 O(1)",
+      code: "int findDuplicate(vector<int>& nums) {\n    int l = 1, r = nums.size() - 1;\n    while (l < r) {\n        int mid = l + (r - l) / 2, cnt = 0;\n        for (int x : nums) cnt += (x <= mid);\n        if (cnt > mid) r = mid;   // [1..mid] 里有多于 mid 个数 → 重复在其中\n        else l = mid + 1;\n    }\n    return l;\n}"
+    },
+    {
+      name: "方法二：快慢指针（把值当下标看成链表找环入口）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int findDuplicate(vector<int>& nums) {\n    int slow = 0, fast = 0;\n    do { slow = nums[slow]; fast = nums[nums[fast]]; } while (slow != fast);\n    slow = 0;\n    while (slow != fast) { slow = nums[slow]; fast = nums[fast]; }\n    return slow;   // 环入口即重复数\n}"
+    },
+    {
+      name: "方法三：二进制位计数",
+      complexity: "时间 O(n log n) / 空间 O(1)",
+      code: "int findDuplicate(vector<int>& nums) {\n    int n = nums.size() - 1, ans = 0;\n    for (int b = 0; b < 31; b++) {\n        int x = 0, y = 0;\n        for (int i = 0; i <= n; i++) {\n            if (nums[i] >> b & 1) x++;\n            if (i >> b & 1) y++;\n        }\n        // 重复数该位上 1 的个数超过 1..n 的理论个数\n        if (x > y) ans |= 1 << b;\n    }\n    return ans;\n}"
+    },
+  ],
+  297: [
+    {
+      name: "方法一：DFS前序序列化（空节点用#占位）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "// ---- Codec ----\nstring serialize(TreeNode* root) {\n    if (!root) return \"#,\";\n    return to_string(root->val) + \",\" + serialize(root->left) + serialize(root->right);\n}\nTreeNode* build(vector<int>& vals, int& i) {   // vals 已把 # 解析为 INT_MIN\n    if (vals[i] == INT_MIN) { i++; return nullptr; }\n    TreeNode* u = new TreeNode(vals[i++]);\n    u->left = build(vals, i);\n    u->right = build(vals, i);\n    return u;\n}\nTreeNode* deserialize(string data) {\n    vector<int> vals; int num = 0; bool neg = false, has = false;\n    for (char c : data) {\n        if (c == ',') { vals.push_back(has ? (neg ? -num : num) : INT_MIN); num = 0; neg = has = false; }\n        else if (c == '-') neg = true;\n        else if (isdigit(c)) { num = num * 10 + c - '0'; has = true; }\n    }\n    int i = 0;\n    return build(vals, i);\n}"
+    },
+    {
+      name: "方法二：BFS层序序列化",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "string serialize(TreeNode* root) {\n    string s;\n    queue<TreeNode*> q;\n    q.push(root);\n    while (!q.empty()) {\n        TreeNode* u = q.front(); q.pop();\n        if (u) { s += to_string(u->val) + \",\"; q.push(u->left); q.push(u->right); }\n        else s += \"#,\";\n    }\n    return s;\n}\nTreeNode* deserialize(string data) {\n    queue<TreeNode**> q;                 // 存\"待挂孩子的指针的地址\"\n    TreeNode dummy;\n    q.push(&dummy.left);\n    size_t pos = 0;\n    while (pos < data.size()) {\n        size_t nxt = data.find(',', pos);\n        string tok = data.substr(pos, nxt - pos);\n        pos = nxt + 1;\n        TreeNode** slot = q.front(); q.pop();\n        if (tok != \"#\") {\n            TreeNode* u = new TreeNode(stoi(tok));\n            *slot = u;\n            q.push(&u->left);\n            q.push(&u->right);\n        }\n    }\n    return dummy.left;\n}"
+    },
+  ],
+  300: [
+    {
+      name: "方法一：贪心+二分（维护递增尾巴数组）",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "// tails[i] = 长度为 i+1 的递增子序列的最小可能结尾\nint lengthOfLIS(vector<int>& nums) {\n    vector<int> tails;\n    for (int x : nums) {\n        auto it = lower_bound(tails.begin(), tails.end(), x);\n        if (it == tails.end()) tails.push_back(x);  // 可以接长\n        else *it = x;                               // 替换，让结尾更小\n    }\n    return tails.size();\n}"
+    },
+    {
+      name: "方法二：DP（O(n²) 经典解）",
+      complexity: "时间 O(n²) / 空间 O(n)",
+      code: "int lengthOfLIS(vector<int>& nums) {\n    int n = nums.size(), ans = 1;\n    vector<int> f(n, 1);          // f[i]=以i结尾的LIS长度\n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++)\n            if (nums[j] < nums[i]) f[i] = max(f[i], f[j] + 1);\n        ans = max(ans, f[i]);\n    }\n    return ans;\n}"
+    },
+  ],
+  301: [
+    {
+      name: "方法一：BFS逐层删除（天然去重，层内剪枝）",
+      complexity: "时间 O(n·2^k) / 空间 O(2^k)",
+      code: "bool valid(const string& s) {\n    int c = 0;\n    for (char ch : s) {\n        if (ch == '(') c++;\n        else if (ch == ')' && --c < 0) return false;\n    }\n    return c == 0;\n}\nvector<string> removeInvalidParentheses(string s) {\n    vector<string> ans;\n    queue<string> q;\n    unordered_set<string> vis;\n    q.push(s); vis.insert(s);\n    bool found = false;\n    while (!q.empty()) {\n        string cur = q.front(); q.pop();\n        if (valid(cur)) { ans.push_back(cur); found = true; }  // 本层有解，不再往下删\n        if (found) continue;\n        for (int i = 0; i < cur.size(); i++) {\n            if (cur[i] != '(' && cur[i] != ')') continue;\n            string nxt = cur.substr(0, i) + cur.substr(i + 1);\n            if (!vis.count(nxt)) { vis.insert(nxt); q.push(nxt); }\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：DFS回溯+剪枝（统计需删的左右括号数）",
+      complexity: "时间 O(2^k) / 空间 O(n)",
+      code: "vector<string> ans;\nvoid dfs(string& s, int i, int lrm, int rrm, int open, string& path) {\n    // lrm/rrm: 还需删除的左/右括号数; open: 未匹配左括号数\n    if (i == s.size()) {\n        if (lrm == 0 && rrm == 0 && open == 0) ans.push_back(path);\n        return;\n    }\n    char c = s[i];\n    if (c == '(' && lrm > 0) dfs(s, i + 1, lrm - 1, rrm, open, path);      // 删\n    else if (c == ')' && rrm > 0) dfs(s, i + 1, lrm, rrm - 1, open, path); // 删\n    path.push_back(c);                                                     // 保留\n    if (c == '(') dfs(s, i + 1, lrm, rrm, open + 1, path);\n    else if (c == ')') { if (open > 0) dfs(s, i + 1, lrm, rrm, open - 1, path); }\n    else dfs(s, i + 1, lrm, rrm, open, path);\n    path.pop_back();\n}\nvector<string> removeInvalidParentheses(string s) {\n    int lrm = 0, rrm = 0;\n    for (char c : s) {                     // 先算最少删除数\n        if (c == '(') lrm++;\n        else if (c == ')' && lrm > 0) lrm--;\n        else if (c == ')') rrm++;\n    }\n    string path;\n    dfs(s, 0, lrm, rrm, 0, path);\n    sort(ans.begin(), ans.end());          // 上面写法可能同层重复，去重\n    ans.erase(unique(ans.begin(), ans.end()), ans.end());\n    return ans;\n}"
+    },
+  ],
+  309: [
+    {
+      name: "方法一：DP三状态（持有/不持有且当天卖/冷冻）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "// hold: 手上持有股票的最大收益\n// sold: 当天刚卖出（前一天必须是 hold）\n// rest: 不持有且非当天卖出（含冷冻期后的空闲）\nint maxProfit(vector<int>& p) {\n    int n = p.size();\n    vector<int> hold(n), sold(n), rest(n);\n    hold[0] = -p[0]; sold[0] = 0; rest[0] = 0;\n    for (int i = 1; i < n; i++) {\n        hold[i] = max(hold[i-1], rest[i-1] - p[i]);  // 冷冻期后才能买\n        sold[i] = hold[i-1] + p[i];\n        rest[i] = max(rest[i-1], sold[i-1]);\n    }\n    return max(sold[n-1], rest[n-1]);\n}"
+    },
+    {
+      name: "方法二：DP空间优化（滚动变量）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int maxProfit(vector<int>& p) {\n    int hold = INT_MIN / 2, sold = 0, rest = 0;\n    for (int x : p) {\n        int preSold = sold;\n        sold = hold + x;\n        hold = max(hold, rest - x);   // 只能从 rest 状态买入\n        rest = max(rest, preSold);    // 冷冻一天后转空闲\n    }\n    return max(sold, rest);\n}"
+    },
+  ],
+  312: [
+    {
+      name: "方法一：区间DP（开区间，虚拟气球补1）",
+      complexity: "时间 O(n³) / 空间 O(n²)",
+      code: "// f[l][r] = 戳破开区间(l,r)内所有气球的最大得分\nint maxCoins(vector<int>& nums) {\n    vector<int> a;                       // 两端补虚拟1，避免边界特判\n    a.push_back(1);\n    for (int x : nums) if (x > 0) a.push_back(x);\n    a.push_back(1);\n    int n = a.size();\n    vector<vector<int>> f(n, vector<int>(n, 0));\n    for (int len = 2; len < n; len++)         // 枚举区间长度\n        for (int l = 0; l + len < n; l++) {\n            int r = l + len;\n            for (int k = l + 1; k < r; k++)   // 枚举区间内\"最后戳\"的气球\n                f[l][r] = max(f[l][r],\n                    f[l][k] + f[k][r] + a[l] * a[k] * a[r]);\n        }\n    return f[0][n - 1];\n}"
+    },
+    {
+      name: "方法二：记忆化搜索（同状态不同写法）",
+      complexity: "时间 O(n³) / 空间 O(n²)",
+      code: "vector<vector<int>> memo;\nvector<int> a;\nint dfs(int l, int r) {          // 开区间(l,r)\n    if (l + 1 >= r) return 0;\n    int& res = memo[l][r];\n    if (res) return res;\n    for (int k = l + 1; k < r; k++)\n        res = max(res, dfs(l, k) + dfs(k, r) + a[l] * a[k] * a[r]);\n    return res;\n}\nint maxCoins(vector<int>& nums) {\n    a = {1};\n    for (int x : nums) if (x > 0) a.push_back(x);\n    a.push_back(1);\n    int n = a.size();\n    memo.assign(n, vector<int>(n, 0));\n    return dfs(0, n - 1);\n}"
+    },
+  ],
+  322: [
+    {
+      name: "方法一：完全背包 DP（推荐）",
+      complexity: "时间 O(n·amount) / 空间 O(amount)",
+      code: "int coinChange(vector<int>& coins, int amount) {\n    vector<int> dp(amount + 1, amount + 1);   // 初始为\"不可达\"\n    dp[0] = 0;\n    for (int i = 1; i <= amount; i++)\n        for (int c : coins)\n            if (c <= i)\n                dp[i] = min(dp[i], dp[i - c] + 1);\n    return dp[amount] > amount ? -1 : dp[amount];\n}"
+    },
+    {
+      name: "方法二：BFS 最短路（每个金额是一个节点）",
+      complexity: "时间 O(n·amount) / 空间 O(amount)",
+      code: "int coinChange(vector<int>& coins, int amount) {\n    if (amount == 0) return 0;\n    queue<int> q; q.push(0);\n    vector<bool> vis(amount + 1, false);\n    vis[0] = true;\n    int step = 0;\n    while (!q.empty()) {\n        step++;\n        int sz = q.size();\n        for (int k = 0; k < sz; k++) {\n            int cur = q.front(); q.pop();\n            for (int c : coins) {\n                int nxt = cur + c;\n                if (nxt == amount) return step;\n                if (nxt < amount && !vis[nxt]) {\n                    vis[nxt] = true;\n                    q.push(nxt);\n                }\n            }\n        }\n    }\n    return -1;\n}"
+    },
+    {
+      name: "方法三：记忆化 DFS",
+      complexity: "时间 O(n·amount) / 空间 O(amount)",
+      code: "vector<int> memo;\nvector<int> coins_;\nint dfs(int rest) {\n    if (rest == 0) return 0;\n    if (rest < 0) return INT_MAX / 2;\n    if (memo[rest] != -1) return memo[rest];\n    int best = INT_MAX / 2;\n    for (int c : coins_) best = min(best, dfs(rest - c) + 1);\n    return memo[rest] = best;\n}\nint coinChange(vector<int>& coins, int amount) {\n    coins_ = coins;\n    memo.assign(amount + 1, -1);\n    int r = dfs(amount);\n    return r >= INT_MAX / 2 ? -1 : r;\n}"
+    },
+  ],
+  337: [
+    {
+      name: "方法一：记忆化搜索（DFS+哈希缓存）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "struct pair { int sel, notsel; };\nunordered_map<TreeNode*, pair> memo;\n\npair dfs(TreeNode* u) {\n    if (!u) return {0, 0};\n    if (memo.count(u)) return memo[u];\n    auto l = dfs(u->left), r = dfs(u->right);\n    // 选当前节点：儿子必须不选\n    int sel = u->val + l.notsel + r.notsel;\n    // 不选当前节点：儿子可选可不选，取较大\n    int notsel = max(l.sel, l.notsel) + max(r.sel, r.notsel);\n    return memo[u] = {sel, notsel};\n}\nint rob(TreeNode* root) { auto p = dfs(root); return max(p.sel, p.notsel); }"
+    },
+    {
+      name: "方法二：树形DP（后序遍历，返回值携带状态）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "// 返回 {选u的最大值, 不选u的最大值}\npair<int,int> dfs(TreeNode* u) {\n    if (!u) return {0, 0};\n    auto [ls, ln] = dfs(u->left);\n    auto [rs, rn] = dfs(u->right);\n    return {u->val + ln + rn,               // 选u\n            max(ls, ln) + max(rs, rn)};     // 不选u\n}\nint rob(TreeNode* root) { auto p = dfs(root); return max(p.first, p.second); }"
+    },
+  ],
+  338: [
+    {
+      name: "方法一：DP——最低有效位（x & 1）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> countBits(int n) {\n    vector<int> dp(n + 1);\n    for (int i = 1; i <= n; i++)\n        dp[i] = dp[i >> 1] + (i & 1);    // 去掉最后一位 + 最后一位\n    return dp;\n}"
+    },
+    {
+      name: "方法二：DP——最低设置位（Brian Kernighan）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> countBits(int n) {\n    vector<int> dp(n + 1);\n    for (int i = 1; i <= n; i++)\n        dp[i] = dp[i & (i - 1)] + 1;     // 抹掉最低位的 1\n    return dp;\n}"
+    },
+    {
+      name: "方法三：逐位暴力",
+      complexity: "时间 O(n log n) / 空间 O(1)（不算输出）",
+      code: "vector<int> countBits(int n) {\n    vector<int> res(n + 1);\n    for (int i = 0; i <= n; i++) {\n        int x = i, c = 0;\n        while (x) { x &= x - 1; c++; }   // 每次消一个 1\n        res[i] = c;\n    }\n    return res;\n}"
+    },
+  ],
+  347: [
+    {
+      name: "方法一：小顶堆（推荐）",
+      complexity: "时间 O(n log k) / 空间 O(n)",
+      code: "vector<int> topKFrequent(vector<int>& nums, int k) {\n    unordered_map<int, int> cnt;\n    for (int x : nums) cnt[x]++;\n    priority_queue<pair<int,int>, vector<pair<int,int>>,\n                   greater<pair<int,int>>> pq;   // {频次, 值}\n    for (auto& [v, c] : cnt) {\n        pq.push({c, v});\n        if ((int)pq.size() > k) pq.pop();\n    }\n    vector<int> res;\n    while (!pq.empty()) { res.push_back(pq.top().second); pq.pop(); }\n    return res;\n}"
+    },
+    {
+      name: "方法二：桶排序（频次做下标，线性）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> topKFrequent(vector<int>& nums, int k) {\n    unordered_map<int, int> cnt;\n    for (int x : nums) cnt[x]++;\n    vector<vector<int>> bucket(nums.size() + 1);  // 频次 1..n\n    for (auto& [v, c] : cnt) bucket[c].push_back(v);\n    vector<int> res;\n    for (int c = nums.size(); c >= 1 && res.size() < k; c--)\n        for (int v : bucket[c]) {\n            res.push_back(v);\n            if (res.size() == k) break;\n        }\n    return res;\n}"
+    },
+    {
+      name: "方法三：快速选择",
+      complexity: "平均 O(n) / 空间 O(n)",
+      code: "vector<pair<int,int>> a;               // {频次, 值}\nint quickSel(int l, int r, int k) {     // 找第 k 大的频次\n    if (l == r) return a[l].first;\n    int p = a[l + rand() % (r - l + 1)].first;\n    int i = l - 1, j = r + 1;\n    while (i < j) {\n        do i++; while (a[i].first > p);\n        do j--; while (a[j].first < p);\n        if (i < j) swap(a[i], a[j]);\n    }\n    if (k <= j) return quickSel(l, j, k);\n    return quickSel(j + 1, r, k);\n}\nvector<int> topKFrequent(vector<int>& nums, int k) {\n    unordered_map<int, int> cnt;\n    for (int x : nums) cnt[x]++;\n    for (auto& [v, c] : cnt) a.push_back({c, v});\n    int th = quickSel(0, a.size() - 1, k);   // 第 k 大频次阈值\n    vector<int> res;\n    for (auto& [c, v] : a) {\n        if (c >= th) res.push_back(v);\n        if (res.size() == k) break;\n    }\n    return res;\n}"
+    },
+  ],
+  394: [
+    {
+      name: "方法一：双栈（数字栈 + 字符串栈，推荐）",
+      complexity: "时间 O(输出长度) / 空间 O(嵌套深度)",
+      code: "string decodeString(string s) {\n    stack<int> numSt;\n    stack<string> strSt;\n    string cur = \"\";\n    int num = 0;\n    for (char c : s) {\n        if (isdigit(c)) num = num * 10 + (c - '0');\n        else if (c == '[') {             // 保存现场\n            numSt.push(num);\n            strSt.push(cur);\n            num = 0; cur = \"\";\n        } else if (c == ']') {           // 恢复现场\n            int k = numSt.top(); numSt.pop();\n            string prev = strSt.top(); strSt.pop();\n            for (int i = 0; i < k; i++) prev += cur;\n            cur = prev;\n        } else cur += c;\n    }\n    return cur;\n}"
+    },
+    {
+      name: "方法二：递归（解析函数返回位置）",
+      complexity: "时间 O(输出长度) / 空间 O(嵌套深度)",
+      code: "int i = 0;\nstring parse(string& s) {                // 解析到 ']' 或结尾\n    string res;\n    while (i < s.size() && s[i] != ']') {\n        if (!isdigit(s[i])) res += s[i++];\n        else {\n            int k = 0;\n            while (isdigit(s[i])) k = k * 10 + (s[i++] - '0');\n            i++;                         // 跳过 '['\n            string sub = parse(s);\n            i++;                         // 跳过 ']'\n            while (k--) res += sub;\n        }\n    }\n    return res;\n}\nstring decodeString(string s) {\n    i = 0;\n    return parse(s);\n}"
+    },
+  ],
+  399: [
+    {
+      name: "方法一：带权并查集（推荐）",
+      complexity: "单查询均摊 O(α) / 空间 O(V)",
+      code: "unordered_map<string, string> fa;\nunordered_map<string, double> w;         // 到父节点的倍率\nstring find(string x) {\n    if (fa[x] == x) return x;\n    string r = find(fa[x]);\n    w[x] *= w[fa[x]];                    // 路径压缩时累乘倍率\n    return fa[x] = r;\n}\nvoid unite(string a, string b, double r) {   // a / b = r\n    string ra = find(a), rb = find(b);\n    if (ra == rb) return;\n    fa[ra] = rb;\n    w[ra] = w[b] * r / w[a];             // ra/rb 的倍率推导\n}\nvector<double> calcEquation(vector<vector<string>>& eq, vector<double>& val,\n                            vector<vector<string>>& q) {\n    for (auto& e : eq) { fa[e[0]] = e[0]; fa[e[1]] = e[1]; w[e[0]] = w[e[1]] = 1; }\n    for (int i = 0; i < eq.size(); i++)\n        unite(eq[i][0], eq[i][1], val[i]);\n    vector<double> res;\n    for (auto& p : q) {\n        if (!fa.count(p[0]) || !fa.count(p[1]) ||\n            find(p[0]) != find(p[1])) res.push_back(-1.0);\n        else res.push_back(w[p[0]] / w[p[1]]);  // 同根时商即答案\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：DFS 图搜索（每次查询搜路径）",
+      complexity: "单查询 O(E) / 空间 O(V+E)",
+      code: "unordered_map<string, vector<pair<string, double>>> g;\ndouble dfs(string& cur, string& dst, unordered_set<string>& vis) {\n    if (!g.count(cur) || !g.count(dst)) return -1;\n    if (cur == dst) return 1;\n    vis.insert(cur);\n    for (auto& [nxt, w] : g[cur])\n        if (!vis.count(nxt)) {\n            double r = dfs(nxt, dst, vis);\n            if (r > 0) return r * w;    // 乘上这条边\n        }\n    return -1;\n}\nvector<double> calcEquation(vector<vector<string>>& eq, vector<double>& val,\n                            vector<vector<string>>& q) {\n    for (int i = 0; i < eq.size(); i++) {\n        g[eq[i][0]].push_back({eq[i][1], val[i]});\n        g[eq[i][1]].push_back({eq[i][0], 1.0 / val[i]});\n    }\n    vector<double> res;\n    for (auto& p : q) {\n        unordered_set<string> vis;\n        res.push_back(dfs(p[0], p[1], vis));\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法三：BFS 图搜索",
+      complexity: "单查询 O(E) / 空间 O(V+E)",
+      code: "unordered_map<string, vector<pair<string, double>>> g;\ndouble bfs(string& s, string& t) {\n    if (!g.count(s) || !g.count(t)) return -1;\n    queue<pair<string, double>> q;\n    unordered_set<string> vis;\n    q.push({s, 1.0}); vis.insert(s);\n    while (!q.empty()) {\n        auto [cur, val] = q.front(); q.pop();\n        if (cur == t) return val;\n        for (auto& [nxt, w] : g[cur])\n            if (vis.insert(nxt).second)\n                q.push({nxt, val * w});\n    }\n    return -1;\n}\n// 建图与 DFS 版相同（双向边 + 1/w），对每个查询调 bfs(s, t)\nvector<double> calcEquation(vector<vector<string>>& eq, vector<double>& val,\n                            vector<vector<string>>& q) {\n    for (int i = 0; i < eq.size(); i++) {\n        g[eq[i][0]].push_back({eq[i][1], val[i]});\n        g[eq[i][1]].push_back({eq[i][0], 1.0 / val[i]});\n    }\n    vector<double> res;\n    for (auto& p : q) res.push_back(bfs(p[0], p[1]));\n    return res;\n}"
+    },
+  ],
+  406: [
+    {
+      name: "方法一：按身高降序 + 按k升序 + 插入（推荐）",
+      complexity: "时间 O(n²) / 空间 O(n)",
+      code: "vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {\n    sort(people.begin(), people.end(), [](auto& a, auto& b) {\n        return a[0] > b[0] || (a[0] == b[0] && a[1] < b[1]);\n    });                                  // 高的先处理，同高 k 小的先\n    vector<vector<int>> res;\n    for (auto& p : people)\n        res.insert(res.begin() + p[1], p);   // 按 k 插入\n    return res;\n}"
+    },
+    {
+      name: "方法二：按身高升序 + 逐个放第 k 个空位",
+      complexity: "时间 O(n²) / 空间 O(n)",
+      code: "vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {\n    int n = people.size();\n    sort(people.begin(), people.end(), [](auto& a, auto& b) {\n        return a[0] < b[0] || (a[0] == b[0] && a[1] > b[1]);\n    });                                  // 矮的先放\n    vector<vector<int>> res(n, {-1, -1});\n    for (auto& p : people) {\n        int skip = p[1];                 // 前面要有 k 个空位或更矮的人\n        for (int i = 0; i < n; i++) {\n            if (res[i][0] == -1) {       // 空位\n                if (skip == 0) { res[i] = p; break; }\n                skip--;\n            }\n        }\n    }\n    return res;\n}"
+    },
+  ],
+  416: [
+    {
+      name: "方法一：01 背包一维（推荐）",
+      complexity: "时间 O(n·S) / 空间 O(S)",
+      code: "bool canPartition(vector<int>& a) {\n    int sum = accumulate(a.begin(), a.end(), 0);\n    if (sum % 2) return false;\n    int S = sum / 2;\n    vector<char> dp(S + 1, 0);           // dp[j]=能否恰好装满 j\n    dp[0] = 1;\n    for (int x : a)\n        for (int j = S; j >= x; j--)     // 倒序保证每件只用一次\n            if (dp[j - x]) dp[j] = 1;\n    return dp[S];\n}"
+    },
+    {
+      name: "方法二：01 背包二维",
+      complexity: "时间 O(n·S) / 空间 O(n·S)",
+      code: "bool canPartition(vector<int>& a) {\n    int sum = accumulate(a.begin(), a.end(), 0);\n    if (sum % 2) return false;\n    int S = sum / 2;\n    vector<vector<char>> dp(a.size() + 1, vector<char>(S + 1, 0));\n    dp[0][0] = 1;\n    for (int i = 1; i <= a.size(); i++)\n        for (int j = 0; j <= S; j++) {\n            dp[i][j] = dp[i - 1][j];     // 不选\n            if (j >= a[i - 1] && dp[i - 1][j - a[i - 1]])\n                dp[i][j] = 1;            // 选\n        }\n    return dp[a.size()][S];\n}"
+    },
+    {
+      name: "方法三：bitset 位运算优化",
+      complexity: "时间 O(n·S/64) / 空间 O(S/64)",
+      code: "bool canPartition(vector<int>& a) {\n    int sum = accumulate(a.begin(), a.end(), 0);\n    if (sum % 2) return false;\n    int S = sum / 2;\n    bitset<10001> bs;                    // 上限 100 个数×100\n    bs[0] = 1;\n    for (int x : a)\n        bs |= bs << x;                   // 整体移位即\"全部+ x\"\n    return bs[S];\n}"
+    },
+  ],
+  437: [
+    {
+      name: "方法一：前缀和 + 哈希（推荐，树上路径计数）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "unordered_map<long long, int> cnt;      // 前缀和 -> 条数\nint target_, ans = 0;\nvoid dfs(TreeNode* root, long long cur) {\n    if (!root) return;\n    cur += root->val;\n    ans += cnt.count(cur - target_) ? cnt[cur - target_] : 0;\n    cnt[cur]++;\n    dfs(root->left, cur);\n    dfs(root->right, cur);\n    cnt[cur]--;                          // 回溯撤销（树路径不能跨）\n}\nint pathSum(TreeNode* root, int target) {\n    target_ = target;\n    cnt[0] = 1;\n    dfs(root, 0);\n    return ans;\n}"
+    },
+    {
+      name: "方法二：双重 DFS（每个节点都当一次根）",
+      complexity: "时间 O(n²) / 空间 O(h)",
+      code: "int rootSum(TreeNode* root, long long rest) {  // 以 root 为起点向下\n    if (!root) return 0;\n    int r = (rest == root->val);\n    r += rootSum(root->left,  rest - root->val);\n    r += rootSum(root->right, rest - root->val);\n    return r;\n}\nint pathSum(TreeNode* root, int target) {\n    if (!root) return 0;\n    return rootSum(root, target)                // 以 root 为起点\n         + pathSum(root->left, target)          // 左子树里所有起点\n         + pathSum(root->right, target);\n}"
+    },
+  ],
+  438: [
+    {
+      name: "方法一：滑动窗口 + 计数数组（推荐）",
+      complexity: "时间 O(n) / 空间 O(1)（固定 26）",
+      code: "vector<int> findAnagrams(string s, string p) {\n    vector<int> res;\n    if (s.size() < p.size()) return res;\n    int cnt[26] = {0};\n    for (int i = 0; i < p.size(); i++) {\n        cnt[p[i] - 'a']++;\n        cnt[s[i] - 'a']--;               // 初始窗口\n    }\n    int diff = 0;\n    for (int i = 0; i < 26; i++)\n        if (cnt[i] != 0) diff++;\n    if (diff == 0) res.push_back(0);\n    for (int i = p.size(); i < s.size(); i++) {\n        int in = s[i] - 'a', out = s[i - p.size()] - 'a';\n        if (cnt[in] == 0) diff++; else if (cnt[in] == -1) diff--;\n        cnt[in]--;\n        if (cnt[out] == 0) diff++; else if (cnt[out] == 1) diff--;\n        cnt[out]++;\n        if (diff == 0) res.push_back(i - p.size() + 1);\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：滑动窗口 + 双计数比对",
+      complexity: "时间 O(26n) / 空间 O(1)",
+      code: "vector<int> findAnagrams(string s, string p) {\n    vector<int> res;\n    if (s.size() < p.size()) return res;\n    int need[26] = {0}, win[26] = {0};\n    for (char c : p) need[c - 'a']++;\n    int L = p.size();\n    for (int i = 0; i < s.size(); i++) {\n        win[s[i] - 'a']++;\n        if (i >= L) win[s[i - L] - 'a']--;   // 移出左端\n        if (i >= L - 1 &&\n            equal(win, win + 26, need))\n            res.push_back(i - L + 1);\n    }\n    return res;\n}"
+    },
+  ],
+  448: [
+    {
+      name: "方法一：原地哈希（值当下标，取负标记）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "vector<int> findDisappearedNumbers(vector<int>& nums) {\n    for (int x : nums) {\n        int idx = abs(x) - 1;            // 值 v 对应下标 v-1\n        if (nums[idx] > 0) nums[idx] = -nums[idx];  // 标记出现过\n    }\n    vector<int> res;\n    for (int i = 0; i < nums.size(); i++)\n        if (nums[i] > 0) res.push_back(i + 1);      // 正数=缺失\n    return res;\n}"
+    },
+    {
+      name: "方法二：哈希集合",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> findDisappearedNumbers(vector<int>& nums) {\n    unordered_set<int> s(nums.begin(), nums.end());\n    vector<int> res;\n    for (int i = 1; i <= nums.size(); i++)\n        if (!s.count(i)) res.push_back(i);\n    return res;\n}"
+    },
+    {
+      name: "方法三：加 n 取模（下标标记不破坏原值）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "vector<int> findDisappearedNumbers(vector<int>& nums) {\n    int n = nums.size();\n    for (int x : nums) nums[(x - 1) % n] += n;   // 出现过的下标都 +n\n    vector<int> res;\n    for (int i = 0; i < n; i++)\n        if (nums[i] <= n) res.push_back(i + 1);\n    return res;\n}"
+    },
+  ],
+  461: [
+    {
+      name: "方法一：异或 + 逐位计数",
+      complexity: "时间 O(log n) / 空间 O(1)",
+      code: "int hammingDistance(int x, int y) {\n    int z = x ^ y, res = 0;\n    while (z) {\n        res += z & 1;\n        z >>= 1;\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：异或 + Brian Kernighan（只数 1）",
+      complexity: "时间 O(k)（k 为 1 的个数）/ 空间 O(1)",
+      code: "int hammingDistance(int x, int y) {\n    int z = x ^ y, res = 0;\n    while (z) { z &= z - 1; res++; }     // 每轮消去最低位的 1\n    return res;\n}"
+    },
+    {
+      name: "方法三：内置函数",
+      complexity: "时间 O(1)（硬件指令）/ 空间 O(1)",
+      code: "int hammingDistance(int x, int y) {\n    return __builtin_popcount(x ^ y);    // GCC 内置，编译成 popcnt 指令\n}"
+    },
+  ],
+  494: [
+    {
+      name: "方法一：转化为 01 背包（子集和，推荐）",
+      complexity: "时间 O(n·S) / 空间 O(S)",
+      code: "int findTargetSumWays(vector<int>& a, int target) {\n    int sum = accumulate(a.begin(), a.end(), 0);\n    if ((sum + target) % 2 || abs(target) > sum) return 0;\n    int S = (sum + target) / 2;          // 选出和为 S 的子集加正号\n    vector<int> dp(S + 1, 0);\n    dp[0] = 1;\n    for (int x : a)\n        for (int j = S; j >= x; j--)     // 01 背包倒序\n            dp[j] += dp[j - x];\n    return dp[S];\n}"
+    },
+    {
+      name: "方法二：回溯枚举（+/- 二叉展开）",
+      complexity: "时间 O(2ⁿ) / 空间 O(n)",
+      code: "int ans = 0;\nvoid dfs(vector<int>& a, int i, int cur) {\n    if (i == a.size()) {\n        if (cur == 0) ans++;             // 全部符号分配完\n        return;\n    }\n    dfs(a, i + 1, cur - a[i]);           // 取 +\n    dfs(a, i + 1, cur + a[i]);           // 取 -\n}\nint findTargetSumWays(vector<int>& a, int target) {\n    dfs(a, 0, target);\n    return ans;\n}"
+    },
+    {
+      name: "方法三：记忆化 DFS（余量 + 前缀和剪枝）",
+      complexity: "时间 O(n·S) / 空间 O(n·S)",
+      code: "vector<vector<int>> memo;\nvector<int> a_, suf;\nint dfs(int i, int rest) {               // 还需凑出 rest\n    if (i == a_.size()) return rest == 0;\n    if (abs(rest) > suf[i]) return 0;    // 剪枝：剩余全同号也不够\n    if (memo[i][rest + 1000] != -1) return memo[i][rest + 1000];\n    return memo[i][rest + 1000] =\n        dfs(i + 1, rest - a_[i]) + dfs(i + 1, rest + a_[i]);\n}\nint findTargetSumWays(vector<int>& a, int target) {\n    a_ = a;\n    int n = a.size();\n    suf.assign(n + 1, 0);\n    for (int i = n - 1; i >= 0; i--) suf[i] = suf[i + 1] + a[i];\n    memo.assign(n, vector<int>(2005, -1));\n    return dfs(0, target);\n}"
+    },
+  ],
+  538: [
+    {
+      name: "方法一：反中序递归（右→根→左累加）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "int sum = 0;\nvoid dfs(TreeNode* u) {\n    if (!u) return;\n    dfs(u->right);       // 先累加右子树（更大的节点）\n    u->val += sum;       // 当前节点加上\"之前所有更大节点之和\"\n    sum = u->val;\n    dfs(u->left);\n}\nTreeNode* convertBST(TreeNode* root) { dfs(root); return root; }"
+    },
+    {
+      name: "方法二：反中序迭代（栈模拟，Morris也可）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "TreeNode* convertBST(TreeNode* root) {\n    int sum = 0;\n    stack<TreeNode*> st;\n    TreeNode* cur = root;\n    while (cur || !st.empty()) {\n        while (cur) { st.push(cur); cur = cur->right; }  // 一路向右\n        cur = st.top(); st.pop();\n        cur->val += sum;\n        sum = cur->val;\n        cur = cur->left;\n    }\n    return root;\n}"
+    },
+  ],
+  543: [
+    {
+      name: "方法一：DFS 递归（边递归边更新直径）",
+      complexity: "时间 O(n) / 空间 O(h)",
+      code: "int ans = 0;\nint depth(TreeNode* root) {              // 返回以 root 为端点向下最大链长\n    if (!root) return 0;\n    int L = depth(root->left), R = depth(root->right);\n    ans = max(ans, L + R);               // 经过 root 的路径长\n    return max(L, R) + 1;\n}\nint diameterOfBinaryTree(TreeNode* root) {\n    ans = 0; depth(root); return ans;\n}"
+    },
+    {
+      name: "方法二：迭代后序遍历（栈 + 深度哈希）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int diameterOfBinaryTree(TreeNode* root) {\n    if (!root) return 0;\n    unordered_map<TreeNode*, int> dep;   // 节点 -> 最大链长\n    vector<TreeNode*> order;             // 后序序列\n    stack<TreeNode*> st; st.push(root);\n    while (!st.empty()) {                // 先得到一个根在前的出栈序\n        TreeNode* t = st.top(); st.pop();\n        order.push_back(t);\n        if (t->left)  st.push(t->left);\n        if (t->right) st.push(t->right);\n    }\n    int ans = 0;\n    for (int i = order.size() - 1; i >= 0; i--) {  // 逆序=后序\n        TreeNode* t = order[i];\n        int L = t->left  ? dep[t->left]  : 0;\n        int R = t->right ? dep[t->right] : 0;\n        dep[t] = max(L, R) + 1;\n        ans = max(ans, L + R);\n    }\n    return ans;\n}"
+    },
+  ],
+  560: [
+    {
+      name: "方法一：前缀和+哈希表（最优）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int subarraySum(vector<int>& nums, int k) {\n    unordered_map<int, int> cnt;   // 前缀和出现次数\n    cnt[0] = 1;\n    int pre = 0, ans = 0;\n    for (int x : nums) {\n        pre += x;\n        if (cnt.count(pre - k)) ans += cnt[pre - k];  // 以x结尾的和为k的子数组数\n        cnt[pre]++;\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：枚举右端点固定左端点倒序累加",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "int subarraySum(vector<int>& nums, int k) {\n    int n = nums.size(), ans = 0;\n    for (int i = 0; i < n; i++) {\n        int s = 0;\n        for (int j = i; j >= 0; j--) {  // 倒着累加，省前缀和数组\n            s += nums[j];\n            if (s == k) ans++;\n        }\n    }\n    return ans;\n}"
+    },
+  ],
+  581: [
+    {
+      name: "方法一：双向扫描（右往左找左边界，左往右找右边界）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int findUnsortedSubarray(vector<int>& nums) {\n    int n = nums.size(), l = -1, r = -1, mx = INT_MIN, mn = INT_MAX;\n    for (int i = 0; i < n; i++) {          // 从左往右：记录峰值，下降处右边界更新\n        if (nums[i] < mx) r = i;\n        else mx = nums[i];\n    }\n    for (int i = n - 1; i >= 0; i--) {     // 从右往左：记录谷值，上升处左边界更新\n        if (nums[i] > mn) l = i;\n        else mn = nums[i];\n    }\n    return r == -1 ? 0 : r - l + 1;\n}"
+    },
+    {
+      name: "方法二：排序对照",
+      complexity: "时间 O(n log n) / 空间 O(n)",
+      code: "int findUnsortedSubarray(vector<int>& nums) {\n    vector<int> t = nums;\n    sort(t.begin(), t.end());\n    int l = 0, r = nums.size() - 1;\n    while (l <= r && nums[l] == t[l]) l++;\n    while (r >= l && nums[r] == t[r]) r--;\n    return r - l + 1;   // 若已有序 l>r，返回负数会出错，r<l 时应返回 0\n}"
+    },
+  ],
+  617: [
+    {
+      name: "方法一：DFS 递归（原地合并）",
+      complexity: "时间 O(min(m,n)) / 空间 O(min(m,n))",
+      code: "TreeNode* mergeTrees(TreeNode* a, TreeNode* b) {\n    if (!a) return b;\n    if (!b) return a;\n    a->val += b->val;                    // 直接在 a 上累加\n    a->left  = mergeTrees(a->left,  b->left);\n    a->right = mergeTrees(a->right, b->right);\n    return a;\n}"
+    },
+    {
+      name: "方法二：BFS 队列（新树节点）",
+      complexity: "时间 O(min(m,n)) / 空间 O(min(m,n))",
+      code: "TreeNode* mergeTrees(TreeNode* a, TreeNode* b) {\n    if (!a) return b;\n    if (!b) return a;\n    queue<pair<TreeNode*, TreeNode*>> q;\n    q.push({a, b});\n    while (!q.empty()) {\n        auto [x, y] = q.front(); q.pop();\n        x->val += y->val;\n        if (x->left && y->left) q.push({x->left, y->left});\n        else if (!x->left) x->left = y->left;    // 缺的直接挂另一棵\n        if (x->right && y->right) q.push({x->right, y->right});\n        else if (!x->right) x->right = y->right;\n    }\n    return a;\n}"
+    },
+  ],
+  621: [
+    {
+      name: "方法一：贪心+桶计数（构造式公式）",
+      complexity: "时间 O(n) / 空间 O(1)",
+      code: "int leastInterval(vector<char>& tasks, int n) {\n    int cnt[26] = {0};\n    for (char c : tasks) cnt[c - 'A']++;\n    int mx = *max_element(cnt, cnt + 26);       // 出现最多的次数\n    int mxcnt = count(cnt, cnt + 26, mx);       // 出现最多次数的任务种数\n    // 两种取大：公式框架 vs 任务总数（冷却槽被填满时）\n    return max((int)tasks.size(), (mx - 1) * (n + 1) + mxcnt);\n}"
+    },
+    {
+      name: "方法二：模拟（小顶堆+冷却队列）",
+      complexity: "时间 O(时间轴长度 × log26) / 空间 O(26)",
+      code: "int leastInterval(vector<char>& tasks, int n) {\n    int cnt[26] = {0};\n    for (char c : tasks) cnt[c - 'A']++;\n    priority_queue<int> pq;                     // 剩余次数（大顶堆）\n    for (int x : cnt) if (x) pq.push(x);\n    queue<pair<int,int>> cool;                  // {剩余次数, 可用时刻}\n    int time = 0;\n    while (!pq.empty() || !cool.empty()) {\n        time++;\n        if (!cool.empty() && cool.front().second == time) pq.push(cool.front().first), cool.pop();\n        if (!pq.empty()) {\n            int f = pq.top() - 1; pq.pop();\n            if (f) cool.push({f, time + n + 1});\n        }\n    }\n    return time;\n}"
+    },
+  ],
+  647: [
+    {
+      name: "方法一：中心扩展（推荐）",
+      complexity: "时间 O(n²) / 空间 O(1)",
+      code: "int countSubstrings(string s) {\n    int n = s.size(), ans = 0;\n    for (int c = 0; c < 2 * n - 1; c++) {\n        int l = c / 2, r = l + c % 2;    // 统一奇偶中心\n        while (l >= 0 && r < n && s[l] == s[r]) {\n            ans++; l--; r++;\n        }\n    }\n    return ans;\n}"
+    },
+    {
+      name: "方法二：动态规划",
+      complexity: "时间 O(n²) / 空间 O(n²)",
+      code: "int countSubstrings(string s) {\n    int n = s.size(), ans = 0;\n    vector<vector<bool>> dp(n, vector<bool>(n, false));\n    for (int i = n - 1; i >= 0; i--)     // i 从大到小保证子区间先算好\n        for (int j = i; j < n; j++)\n            if (s[i] == s[j] &&\n                (j - i < 2 || dp[i + 1][j - 1])) {\n                dp[i][j] = true;\n                ans++;\n            }\n    return ans;\n}"
+    },
+    {
+      name: "方法三：Manacher（线性）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "int countSubstrings(string s) {\n    string t = \"^#\";\n    for (char c : s) { t += c; t += '#'; }\n    t += '$';\n    int n = t.size(), C = 0, R = 0, ans = 0;\n    vector<int> p(n, 0);\n    for (int i = 1; i < n - 1; i++) {\n        p[i] = (i < R) ? min(p[2 * C - i], R - i) : 0;\n        while (t[i + p[i] + 1] == t[i - p[i] - 1]) p[i]++;\n        if (i + p[i] > R) { C = i; R = i + p[i]; }\n        ans += (p[i] + 1) / 2;           // 该中心贡献的回文数\n    }\n    return ans;\n}"
+    },
+  ],
+  739: [
+    {
+      name: "方法一：单调栈（存下标，推荐）",
+      complexity: "时间 O(n) / 空间 O(n)",
+      code: "vector<int> dailyTemperatures(vector<int>& t) {\n    int n = t.size();\n    vector<int> res(n, 0);\n    stack<int> st;                       // 栈内温度单调递减（存下标）\n    for (int i = 0; i < n; i++) {\n        while (!st.empty() && t[i] > t[st.top()]) {\n            int j = st.top(); st.pop();  // t[i] 是 j 的第一个升温日\n            res[j] = i - j;\n        }\n        st.push(i);\n    }\n    return res;\n}"
+    },
+    {
+      name: "方法二：倒序跳跃（DP 思想）",
+      complexity: "时间 O(n) / 空间 O(1)（不算输出）",
+      code: "vector<int> dailyTemperatures(vector<int>& t) {\n    int n = t.size();\n    vector<int> res(n, 0);\n    for (int i = n - 2; i >= 0; i--) {\n        int j = i + 1;                   // 从右邻开始向右跳\n        while (j < n && t[j] <= t[i])\n            if (res[j] == 0) { j = n; break; }   // 后面无升温\n            else j += res[j];            // 跳到 j 的下一个升温日\n        if (j < n) res[i] = j - i;\n    }\n    return res;\n}"
+    },
+  ],
+};
+
 const DEFAULT_KNOWLEDGE = [
   {
     id: 1, name: 'vector', category: 'STL 容器',
@@ -1439,6 +2848,16 @@ function init() {
     saveConfusions();
   }
 
+  // 附上默认解法核心代码（用户未自定义时；不覆盖已存在的 methods）
+  let methodsAttached = false;
+  problems.forEach(p => {
+    if (!p.methods && DEFAULT_METHODS[p.number]) {
+      p.methods = DEFAULT_METHODS[p.number];
+      methodsAttached = true;
+    }
+  });
+  if (methodsAttached) saveProblems();
+
   // 刷新版本号
   localStorage.setItem(VERSION_KEY, DATA_VERSION.toString());
   renderCards();
@@ -1654,6 +3073,16 @@ function openDetail(id) {
     ${p.keyDifficulties ? `<div class="dm-section">
       <div class="dm-label">关键难点</div>
       <div class="dm-content">${escapeHtml(p.keyDifficulties)}</div>
+    </div>` : ''}
+    ${p.methods && p.methods.length ? `<div class="dm-section">
+      <div class="dm-label">核心代码（多种解法）</div>
+      ${p.methods.map(m => `<div class="dm-method">
+        <div class="dm-method-head">
+          <span class="dm-method-name">${escapeHtml(m.name)}</span>
+          <span class="dm-method-complexity">${escapeHtml(m.complexity)}</span>
+        </div>
+        <pre class="dm-code">${escapeHtml(m.code)}</pre>
+      </div>`).join('')}
     </div>` : ''}`;
 
   document.getElementById('detailModal').classList.add('active');
