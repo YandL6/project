@@ -84,6 +84,7 @@
       <button class="btn btn-primary" onclick="openAddModal()">＋ 添加题目</button>
       <button class="btn btn-knowledge" onclick="openKnowledgePanel()">📚 知识库</button>
       <button class="btn btn-confusion" onclick="openConfusionPanel()">⚠️ 易混淆</button>
+      <button class="btn btn-container" onclick="openContainerPanel()">🧰 容器速查</button>
       <div class="dropdown-wrap">
         <button class="btn btn-ghost" onclick="toggleDropdown(event)" title="更多操作">⋮</button>
         <div class="dropdown-menu" id="dropdownMenu">
@@ -229,6 +230,17 @@
       <button class="kph-close" onclick="closeKnowledgePanel()">✕</button>
     </div>
     <div class="knowledge-panel-body" id="knowledgePanelBody"></div>
+  </div>
+
+  <!-- ==================== CONTAINER SIDEBAR ==================== -->
+  <div class="knowledge-overlay" id="containerOverlay" onclick="closeContainerPanel()"></div>
+  <div class="knowledge-panel" id="containerPanel">
+    <div class="knowledge-panel-header">
+      <button class="kph-back" id="containerBackBtn" onclick="renderContainerList()">←</button>
+      <div class="kph-title" id="containerPanelTitle">🧰 STL 容器速查</div>
+      <button class="kph-close" onclick="closeContainerPanel()">✕</button>
+    </div>
+    <div class="knowledge-panel-body" id="containerPanelBody"></div>
   </div>
 
   <!-- ==================== KNOWLEDGE FORM MODAL ==================== -->
