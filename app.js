@@ -2518,6 +2518,120 @@ const DEFAULT_KNOWLEDGE = [
 ];
 
 // ===================================================================
+// STL 容器速查数据（Hot 100 涉及的容器及常用操作汇总）
+// ===================================================================
+const DEFAULT_CONTAINERS = [
+  {
+    id: 1, name: 'vector', en: 'vector<T>', category: '序列容器',
+    total: 74,   // Hot 100 中出现的题数
+    summary: '动态数组：连续内存、随机访问 O(1)、尾部均摊 O(1)；Hot 100 的绝对主力（74 题用到）',
+    structure: '堆上分配的连续内存。容量不足时按 1.5~2 倍扩容：申请新内存 → 搬移元素 → 释放旧内存，因此尾插是均摊 O(1)，且扩容后所有迭代器失效。',
+    ops: 'push_back(x) | 尾部插入（可能触发扩容） | 均摊 O(1)\npop_back() | 删除尾元素 | O(1)\nsize() / empty() | 元素个数 / 判空 | O(1)\na[i] / a.at(i) | 随机访问（at 越界抛异常，[] 越界是 UB） | O(1)\nfront() / back() | 首/尾元素引用 | O(1)\ninsert(it, x) | 迭代器处插入，其后元素后移 | O(n)\nerase(it) | 删除迭代器指向元素，返回下一个有效迭代器 | O(n)\nbegin() / end() | 首迭代器 / 尾后迭代器 | O(1)\nresize(n, v) | 改变大小，新增位置填 v | O(n)\nreserve(n) | 预留容量（不改 size，避免反复扩容） | O(n)\nclear() | 清空元素（capacity 不变） | O(n)\nvector<int>(n, v) | 构造 n 个 v；二维 vector<vector<int>>(m, vector<int>(n)) | O(n)',
+    notes: '1. 扩容后迭代器、引用、指针全部失效——先 reserve 或避免扩容期间持有旧迭代器\n2. 边遍历边删除的标准写法：it = v.erase(it)（erase 返回下一个有效迭代器），erase 后 it 悬空\n3. 初始化就给大小：vector<int> f(n, -1) 比 push_back 回填更直接，DP 题减少扩容\n4. 二维网格题的入口参数就是 vector<vector<char>>&，下标从 0 开始，注意行列不要写反（m 行 n 列，先 size() 取行）\n5. 与算法函数是黄金搭档：sort / lower_bound / upper_bound / unique / max_element / reverse / iota 全部直接作用于 begin()/end()\n6. 二分系列（4/33/34）用 lower_bound/upper_bound 或手写二分，vector 的连续内存是 O(1) 下标访问的根基\n7. 释放内存的技巧：vector<int>().swap(v) 连 capacity 一起清空，clear() 只清 size',
+    reps: [1, 4, 11, 15, 31, 56, 62, 121, 238, 322]
+  },
+  {
+    id: 2, name: 'string', en: 'std::string', category: '序列容器',
+    total: 19,   // Hot 100 中出现的题数
+    summary: '字符串：可变长字符序列，支持 O(1) 下标访问、子串、查找与数字互转',
+    structure: '与 vector<char> 同源的连续内存结构，额外维护长度与短字符串优化（SSO）。',
+    ops: 's.length() / s.size() | 长度（两者等价） | O(1)\ns[i] / s.at(i) | 字符访问 | O(1)\ns.push_back(c) / s.pop_back() | 尾部字符增删 | 均摊 O(1)\ns.substr(pos, len) | 取子串 pos 起 len 个字符（len 可省略=取到底） | O(len)\ns.find(sub) / s.find(sub, pos) | 查找子串，返回首下标，找不到返回 string::npos | O(n·m)\ns.rfind(sub) | 从后往前找 | O(n·m)\ns += str / s.append(str) | 拼接 | O(len)\ns.insert(pos, str) / s.erase(pos, len) | 在 pos 插入 / 删除 pos 起 len 个 | O(n)\nto_string(x) | 数字 → 字符串 | O(位数)\nstoi(s) / stol(s) / stod(s) | 字符串 → int / long / double | O(len)\ns[i] - \'0\' / c - \'a\' | 数字字符→数值 / 字母→序号（哈希 int[26] 的基础） | O(1)\ns.back() / s.front() | 首/尾字符 | O(1)',
+    notes: '1. find 判失败的唯一正确姿势：s.find(t) == string::npos（npos 是 size_t 最大值，与 -1 比较会踩符号坑）\n2. 回文题（5）的中心扩展法双指针 i--/j++ 直接在原串上进行，不需要复制；manacher 进阶可提但 HOT 100 内双指针够用\n3. 字母频次统计模板：int cnt[26] = {0}; for (char c : s) cnt[c - \'a\']++（49 字母异位词分组的 key 可用排序后的 string）\n4. 反转字符串（151）：双指针 swap 或 reverse(s.begin(), s.end())，注意 erase + unique 去多余空格的顺序\n5. 序列化（297）用逗号分隔 + find(\',\', pos) 逐段解析 token，\'#\' 占位空节点\n6. 字符串比较是字典序——\'(\' < \')\' 这类 ASCII 关系在括号题里偶尔能省条件判断',
+    reps: [3, 5, 10, 49, 72, 76, 139, 151, 297]
+  },
+  {
+    id: 3, name: 'unordered_map', en: 'unordered_map<K, V>', category: '关联容器',
+    total: 18,   // Hot 100 中出现的题数
+    summary: '哈希表：均摊 O(1) 的键值查询，刷题第一高频容器（两数之和/前缀和/LRU/计数）',
+    structure: '拉链法哈希表：桶数组 + 桶内链表（冲突多时局部转红黑树）。负载因子超阈值触发 rehash，迭代器全部失效。',
+    ops: 'm[key] | 查值；不存在则插入默认值（int 为 0）——有副作用！ | 均摊 O(1)\nm.count(key) | 键是否存在（0/1），无副作用 | 均摊 O(1)\nm.find(key) | 返回迭代器，m.end() 表示不存在，无副作用 | 均摊 O(1)\nm.insert({k, v}) / m.emplace(k, v) | 插入（键已存在则忽略，不覆盖） | 均摊 O(1)\nm.erase(key) | 按键删除 | 均摊 O(1)\nm.size() / m.empty() | 键值对个数 / 判空 | O(1)\nfor (auto& [k, v] : m) | 遍历（C++17 结构化绑定；顺序不确定） | O(n)\nm[key]++ | 计数标准写法（不存在则从 0+1） | 均摊 O(1)\nmax_element(m.begin(), m.end(), [](auto& a, auto& b){ return a.second < b.second; }) | 找 value 最大的键值对 | O(n)',
+    notes: '1. operator[] 的副作用是最大坑：只查不插的场景（1 两数之和先查再存、141 环检测）必须用 count/find，否则查询本身会插入垃圾键\n2. 计数场景（169 多数元素、347 频次）则要利用副作用：m[x]++ 一行完成「不存在置 0 再 +1」\n3. 两数之和模板：先查 target-x 是否在表中、再插入 x——顺序不能反，否则 x 会匹配到自己\n4. 前缀和 + 哈希（560）：m[pre-k] 累加出现次数，初始化 m[0] = 1 别忘\n5. 索引场景（105 从前序+中序建树）：存「值 → 下标」，先填充再递归查询\n6. 遍历顺序不确定，需要按 key 有序输出时用 map（253 差分时间轴）\n7. 自定义类型做键需手写 hash 结构体（399 用字符串做键没问题，有默认 hash）',
+    reps: [1, 3, 49, 105, 128, 136, 146, 169, 208, 236, 560]
+  },
+  {
+    id: 4, name: 'unordered_set', en: 'unordered_set<T>', category: '关联容器',
+    total: 11,   // Hot 100 中出现的题数
+    summary: '哈希集合：均摊 O(1) 的去重与存在性查询，只关心「有没有」不关心「是什么」',
+    structure: '与 unordered_map 同构，只是不存 value（内部等价于 unordered_map<T, nothing>）。',
+    ops: 's.insert(x) | 插入（已存在则忽略） | 均摊 O(1)\ns.count(x) | 存在性判断（1/0），刷题标准写法 | 均摊 O(1)\ns.find(x) | 迭代器查询，s.end() 表示不存在 | 均摊 O(1)\ns.erase(x) | 删除元素 | 均摊 O(1)\ns.size() / s.empty() | 元素个数 / 判空 | O(1)\nunordered_set<T> s(v.begin(), v.end()) | 用区间构造，顺便去重 | O(n)\nfor (auto& x : s) | 遍历（顺序不确定） | O(n)\nit = s.erase(it) | 边遍历边删的标准写法（返回下一个迭代器） | 均摊 O(1)',
+    notes: '1. 128 最长连续序列的 O(n) 双保险：O(1) 存在性查询 + 只从段起点（x-1 不在集合中）开始数，缺一个都退化 O(n²)\n2. 链表环检测（141/142）：把访问过的 ListNode* 存进集合，重复即入环——比改链表结构安全、比快慢指针好写\n3. 160 相交链表：把 A 链所有节点入集合，再走 B 链第一个命中的就是交点（O(m+n) 空间换简单）\n4. 3 无重复字符的最长子串：与哈希表二选一，需要「记录下标」时用 map，只判存在可 set + erase 收缩\n5. 301 BFS 删括号去重：vis 集合防止同一字符串重复入队',
+    reps: [3, 128, 139, 141, 142, 160, 301, 448]
+  },
+  {
+    id: 5, name: 'map', en: 'map<K, V>', category: '关联容器',
+    total: 1,   // Hot 100 中出现的题数
+    summary: '红黑树有序映射：O(log n) 操作且按键有序遍历，需要「按 key 顺序处理」或前驱后继查询时使用',
+    structure: '红黑树（自平衡二叉搜索树）：节点存键值对，中序遍历即按键升序。迭代器不会因插入失效，删除只使被删节点迭代器失效。',
+    ops: 'm[key] / m.count(key) / m.find(key) | 查值/存在性/迭代器 | O(log n)\nm.insert / m.erase | 插入（不覆盖）/ 删除 | O(log n)\nm.begin() / *m.rbegin() | 最小键 / 最大键的迭代器 | O(1)\nm.lower_bound(k) | 首个 key >= k 的迭代器（红黑树原生支持） | O(log n)\nm.upper_bound(k) | 首个 key > k 的迭代器 | O(log n)\nfor (auto& [k, v] : m) | 按 key 升序遍历——与 unordered_map 的核心区别 | O(n)',
+    notes: '1. 253 会议室 II 的差分数组写法：map<int,int> diff; diff[start]++; diff[end]--; 按 key 升序遍历累加即每个时刻的并发数——map 的有序性就是时间轴\n2. 与 unordered_map 的选型：只做计数/映射用 unordered_map（更快）；需要有序遍历、lower_bound、最小/最大键时用 map\n3. lower_bound 在 map 上是成员函数（二叉搜索），不要误用全局 std::lower_bound（那是线性扫描）\n4. 有序时间轴/事件扫描线类题的通用范式：map 当「自动排序的差分表」',
+    reps: [253]
+  },
+  {
+    id: 6, name: 'set', en: 'set<T>', category: '关联容器',
+    total: 1,   // Hot 100 中出现的题数
+    summary: '红黑树有序集合：O(log n) 的有序去重，能 O(log n) 查前驱后继与 lower_bound',
+    structure: '红黑树，节点只存键。与 map 同构，与 unordered_set 的差别同 map 与 unordered_map。',
+    ops: 's.insert(x) / s.erase(x) | 插入 / 删除 | O(log n)\ns.count(x) | 存在性 | O(log n)\n*s.begin() / *s.rbegin() | 最小元素 / 最大元素 | O(1)\ns.lower_bound(x) | 首个 >= x 的迭代器（找第一个不小于目标的位置） | O(log n)\ns.upper_bound(x) | 首个 > x 的迭代器 | O(log n)\n*prev(it) / *next(it) | 某迭代器的前驱 / 后继元素 | 均摊 O(1)\nfor (auto& x : s) | 升序遍历 | O(n)',
+    notes: '1. 15 三数之和的第三层去重可用 set<vector<int>> ans 收纳结果最后倒出（排序后 vector 天然可比较）；主流解法是排序 + 跳过重复值，set 版胜在不用操心去重逻辑\n2. 与 unordered_set 选型：需要「有序去重」「动态维护第 k 小/前驱后继」用 set；纯存在性查询用 unordered_set\n3. set<vector<int>> / set<pair<int,int>> 直接可用（有默认比较器），这是哈希版做不到的\n4. lower_bound + prev 是「找最后一个 < x 的元素」的组合拳，单调性维护场景常见',
+    reps: [15]
+  },
+  {
+    id: 7, name: 'stack', en: 'stack<T>', category: '容器适配器',
+    total: 18,   // Hot 100 中出现的题数
+    summary: '栈：LIFO 后进先出，只暴露 top；括号匹配/单调栈/迭代版树遍历的核心结构',
+    structure: '默认基于 deque 的适配器（可换 vector/list 底层），只开放 push/pop/top——没有迭代器、不能随机访问。',
+    ops: 'st.push(x) | 压栈 | O(1)\nst.pop() | 弹栈（不返回值！） | O(1)\nst.top() | 访问栈顶（pop 前先取值） | O(1)\nst.empty() / st.size() | 判空 / 元素数 | O(1)\nstack<T, vector<T>> | 指定 vector 做底层容器 | —\n用 vector 模拟栈（v.push_back/v.back/v.pop_back） | 可获得下标访问与遍历能力 | O(1)',
+    notes: '1. pop() 不返回元素：取值必须先 top() 再 pop()，顺序反了是常见 bug\n2. 空栈 top()/pop() 是 UB——取栈顶前必判 empty()；单调栈循环条件 while (!st.empty() && ...) 把判空写进弹栈条件\n3. 括号匹配（20）模板：左括号压栈，右括号弹栈配对；通用套路是「栈底哨兵」（如 32 的 -1、84 的边界 0）省掉空栈特判\n4. 单调栈（42/84/739/85）：维护递增或递减栈，新元素破坏单调性时结算栈顶；每个元素至多进出各一次，整体 O(n)\n5. 树的迭代遍历（94/98/101/104/114/173）：显式栈模拟递归——一路向左压栈，弹出访问转右\n6. 需要「遍历栈内容/按下标访问」时直接用 vector 模拟，别硬抠 stack 接口\n7. 155 最小栈：辅栈同步维护前缀最小值，pop 时两栈同弹',
+    reps: [20, 32, 42, 84, 85, 94, 98, 155, 394, 739]
+  },
+  {
+    id: 8, name: 'queue', en: 'queue<T>', category: '容器适配器',
+    total: 15,   // Hot 100 中出现的题数
+    summary: '队列：FIFO 先进先出，BFS 层序遍历与拓扑排序（Kahn）的标准载体',
+    structure: '默认基于 deque 的适配器，开放 push（队尾）/ pop（队头）/ front / back，无迭代器。',
+    ops: 'q.push(x) | 队尾入队 | O(1)\nq.pop() | 队头出队（不返回值） | O(1)\nq.front() / q.back() | 访问队头 / 队尾 | O(1)\nq.empty() / q.size() | 判空 / 元素数 | O(1)\nqueue<pair<int,int>> | 网格 BFS 存坐标 (i, j) 的标准声明 | O(1)',
+    notes: '1. BFS 框架（200 岛屿）：起点入队并立刻标记 visited，循环取队头 → 处理 → 邻居未标记则「标记后入队」——入队时标记而不是出队时，否则同一节点被重复入队\n2. 层序遍历模板（102）：while (!q.empty()) { int sz = q.size(); for (i < sz) {...} } 内层 for 处理完一整层，需要记录层号/层列表时用它\n3. 拓扑排序 Kahn（207）：入度数组 + 队列，入度归零入队，出队计数 == 节点数则无环\n4. 无权最短路（279 完全平方数、322 零钱兑换 BFS 版）：BFS 首次到达即最短，vis 数组防重复扩展\n5. 坐标队列用 queue<pair<int,int>>，方向数组 dx/dy[4] 统一扩展四邻居\n6. 序列化（297）：层序遍历配 queue<TreeNode**> 的「挂槽位」技巧，\'#\' 占位空节点',
+    reps: [102, 200, 207, 279, 297, 301, 322]
+  },
+  {
+    id: 9, name: 'deque', en: 'deque<T>', category: '序列容器',
+    total: 1,   // Hot 100 中出现的题数
+    summary: '双端队列：两端插入删除均 O(1) 且支持随机访问；配「单调性」即单调队列（239 滑动窗口最大值）',
+    structure: '分段连续内存（map of chunks）：两端各自预留缓冲区，头尾操作 O(1)，中间插删 O(n)，随机访问 O(1) 但比 vector 略慢。',
+    ops: 'dq.push_back(x) / dq.push_front(x) | 尾部/头部插入 | O(1)\ndq.pop_back() / dq.pop_front() | 尾部/头部删除 | O(1)\ndq.front() / dq.back() | 访问两端元素 | O(1)\ndq[i] | 随机访问（vector 做不到头部 O(1)，list 做不到下标） | O(1)\ndq.size() / dq.empty() | 元素数 / 判空 | O(1)\ndq.insert(it, x) / dq.erase(it) | 中间插删 | O(n)',
+    notes: '1. 单调队列四步节奏（239 滑动窗口最大值，背下来）：①队头过期出队（dq.front() <= i-k）→ ②队尾干不过新元素的弹出（nums[dq.back()] <= nums[i]）→ ③新下标入队尾 → ④队头即窗口最值\n2. 单调队列存下标不存值：判断过期（窗口滑出）只有下标能算位置\n3. 每个元素至多入队出队各一次，整体均摊 O(n)——比堆解法 O(n log n) 更优\n4. 弹队尾用 <= 还是 < 决定相等元素去留，按题目对相等的语义选\n5. 三兄弟选型：只尾操作 vector；两端频繁操作 deque；需要中间 O(1) 插删/嫁接 list',
+    reps: [239, 146]
+  },
+  {
+    id: 10, name: 'priority_queue', en: 'priority_queue<T>', category: '容器适配器',
+    total: 6,   // Hot 100 中出现的题数
+    summary: '堆：O(log n) 插入删除、O(1) 取最值；TopK / K 路归并 / 调度类问题的标准结构',
+    structure: '默认 vector 底层的二叉堆适配器。默认大顶堆（less<T>），小顶堆要写 greater<T>。无迭代器，只能访问 top。',
+    ops: 'pq.push(x) | 插入元素（上浮调整） | O(log n)\npq.pop() | 删除堆顶（不返回值） | O(log n)\npq.top() | 访问堆顶（最大/最小） | O(1)\npq.empty() / pq.size() | 判空 / 元素数 | O(1)\npriority_queue<int, vector<int>, greater<int>> | 小顶堆声明（背下来） | —\npriority_queue<pair<int,int>, vector<pair<int,int>>, greater<>> | 小顶堆存 pair，按 first 比较TopK',
+    notes: '1. 记忆口诀：求最大的 K 个用小顶堆（堆里保住当前前 K，堆顶是第 K 大的守门员，新元素大于堆顶才进）；求第 K 大（215）小顶堆维持大小 k 即可\n2. 23 K 路归并：小顶堆存 (节点值, 链表编号)，每次取堆顶接上、push 该链表下一个节点，O(N log k)\n3. 347 前 K 个高频：小顶堆按 (频次, 值) 维持大小 k；同题桶排序版可 O(n)\n4. 懒删除技巧：堆不支持删任意元素——排序对 (值, 下标) 入堆，pop 时检查下标是否已出窗口（239 堆解法），过期直接丢弃继续弹\n5. 延迟弹堆顶：pq.top() 过期就 pop 后再取，循环直到堆顶有效——写成 while 不是 if\n6. 大顶堆是默认（less），要小顶堆写 greater——反了是 TopK 题最常见 bug',
+    reps: [23, 215, 239, 253, 347, 621]
+  },
+  {
+    id: 11, name: 'list', en: 'list<T>', category: '序列容器',
+    total: 1,   // Hot 100 中出现的题数
+    summary: '双向链表：持有迭代器时任意位置 O(1) 插删/挪动且迭代器不失效——LRU 的核心容器',
+    structure: '每个节点存前驱/后继指针，内存不连续。无 operator[]，迭代器只能 ++/--。splice 嫁接节点不拷贝、迭代器全保留。',
+    ops: 'l.push_back(x) / l.push_front(x) | 尾/头插入 | O(1)\nl.pop_back() / l.pop_front() | 尾/头删除 | O(1)\nl.insert(it, x) | 迭代器处插入 | O(1)\nit = l.erase(it) | 删除节点，返回下一个有效迭代器 | O(1)\nl.splice(pos, other, it) | 把 it 节点嫁接到 pos 前（不拷贝、迭代器不失效） | O(1)\nl.sort() / l.unique() / l.merge(other) | 成员函数版（不能用 std::sort） | O(n log n) / O(n) / O(n)\nbegin() / end() | 双向迭代器（无 it + k 随机跳） | O(1)',
+    notes: '1. 146 LRU 的组合拳：unordered_map<key, list<pair<K,V>>::iterator> 管「查得快」+ list 管「排使用顺序」；get 命中后 splice(dq.begin(), dq, it) 一行把节点提到队头，map 里的迭代器无需更新\n2. splice 是 LRU 的灵魂：erase + insert 会产生新节点使旧迭代器失效，splice 只改指针、迭代器全保留\n3. 迭代器失效规则（与 vector 相反）：插入/挪动不失效任何迭代器，只有被 erase 的那个节点失效\n4. 链表节点必须存 key（pair 的 first）：淘汰从队尾发起，只有节点自己知道该删 map 里哪个条目\n5. 删除顺序铁律：先 mp.erase(dq.back().first) 再 dq.pop_back()，反了 key 就取不到了\n6. std::sort 不能用于 list（需要随机访问迭代器），必须用成员函数 l.sort(cmp)',
+    reps: [146]
+  },
+  {
+    id: 12, name: 'pair', en: 'pair<A, B>', category: '辅助类型',
+    total: 12,   // Hot 100 中出现的题数
+    summary: '二元组：first/second 成员 + 默认字典序比较，堆/排序/映射值里到处都是它',
+    structure: '模板结构体，两个公开成员 first、second。默认比较器先比 first 再比 second——这是它能直接进 sort/堆/map 的原因。',
+    ops: '{a, b} | 花括号构造（C++11 起最简写法） | O(1)\nmake_pair(a, b) | 构造（auto 推导场景） | O(1)\np.first / p.second | 成员访问 | O(1)\nauto& [x, y] = p | 结构化绑定解包（C++17，遍历哈希表的核心写法） | O(1)\npair 天生可比较 | 先 first 后 second 的字典序 | O(1)\nvector<pair<int,int>> + sort | 按自定义维度排序配 lambda | O(n log n)',
+    notes: '1. 默认字典序比较是免费福利：priority_queue<pair<int,int>, ..., greater<>> 直接按 first 成小顶堆（23 K 路归并存 值,下标）\n2. 区间题（56 合并区间）的载体 vector<vector<int>> 之外，pair<int,int> 更轻：sort 后 first 即左端点天然有序\n3. 结构化绑定遍历哈希表：for (auto& [k, v] : m)——刷题高频写法，比 it->first 干净得多\n4. 坐标/状态二元组：queue<pair<int,int>> 存网格坐标（200）、dfs 返回 pair<选,不选>（337 树形 DP）\n5. 想改排序维度：sort(v.begin(), v.end(), [](auto& a, auto& b){ return a.second < b.second; })，pair 本身不动',
+    reps: [5, 56, 104, 146, 200, 239, 337, 399, 617, 621]
+  }
+];
+
+// ===================================================================
 // 默认易混淆点数据
 // ===================================================================
 const DEFAULT_CONFUSIONS = [
@@ -3695,10 +3809,103 @@ function toggleDeploy(header) {
 }
 
 // ===================================================================
+// STL 容器速查面板
+// ===================================================================
+function openContainerPanel() {
+  closeKnowledgePanel();
+  closeConfusionPanel();
+  document.getElementById('containerOverlay').classList.add('active');
+  document.getElementById('containerPanel').classList.add('open');
+  renderContainerList();
+}
+
+function closeContainerPanel() {
+  document.getElementById('containerOverlay').classList.remove('active');
+  document.getElementById('containerPanel').classList.remove('open');
+}
+
+function renderContainerList() {
+  document.getElementById('containerBackBtn').classList.remove('show');
+  document.getElementById('containerPanelTitle').textContent = '🧰 STL 容器速查';
+  const cats = ['序列容器', '关联容器', '容器适配器', '辅助类型'];
+  const groups = cats.map(cat => {
+    const items = DEFAULT_CONTAINERS.filter(c => c.category === cat);
+    if (!items.length) return '';
+    const cards = items.map(c => `<div class="cgc-card" onclick="showContainerDetail(${c.id})">
+      <div class="cgc-head">
+        <span class="cgc-name">${escapeHtml(c.name)}</span>
+        <span class="cgc-en">${escapeHtml(c.en)}</span>
+      </div>
+      <div class="cgc-summary">${escapeHtml(c.summary)}</div>
+      <div class="cgc-foot">
+        <span class="cgc-cat">${escapeHtml(c.category)}</span>
+        <span class="cgc-count">${c.total} 题用到</span>
+      </div>
+    </div>`).join('');
+    return `<div class="cg-group">
+      <div class="cg-group-title">${cat}</div>
+      <div class="cg-grid">${cards}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('containerPanelBody').innerHTML = `
+    <div class="cg-intro">Hot 100 涉及的 C++ STL 容器汇总：每个容器的底层结构、常用操作（含复杂度）、刷题要点与关联题目。<b>共 ${DEFAULT_CONTAINERS.length} 个容器</b>，点击卡片查看详情。</div>
+    ${groups}`;
+}
+
+function showContainerDetail(id) {
+  const c = DEFAULT_CONTAINERS.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('containerBackBtn').classList.add('show');
+  document.getElementById('containerPanelTitle').textContent = '🧰 ' + c.name;
+
+  const opsRows = c.ops.split('\n').filter(r => r.trim()).map(r => {
+    const parts = r.split('|').map(s => s.trim());
+    return `<tr><td class="mt-name">${escapeHtml(parts[0])}</td><td>${escapeHtml(parts[1])}</td><td class="mt-complexity">${escapeHtml(parts[2])}</td></tr>`;
+  }).join('');
+
+  const notesHtml = c.notes.split('\n').filter(r => r.trim()).map(r => {
+    const t = r.replace(/^\d+\.\s*/, '');
+    const n = r.match(/^(\d+)\./);
+    return `<div class="cd-note"><span class="cd-note-num">${n ? n[1] : '•'}</span><span>${escapeHtml(t)}</span></div>`;
+  }).join('');
+
+  const repsHtml = c.reps.map(num => {
+    const p = problems.find(x => x.number === num);
+    return p ? `<span class="rp-item" onclick="closeContainerPanel();openDetail(${p.id})">#${p.number} ${escapeHtml(p.title)}</span>` : '';
+  }).join('');
+
+  document.getElementById('containerPanelBody').innerHTML = `
+    <div class="kd-section">
+      <div class="cd-hero">
+        <div class="cd-hero-name">${escapeHtml(c.name)} <span class="cgc-en">${escapeHtml(c.en)}</span></div>
+        <div class="cd-hero-meta"><span class="cd-badge">${escapeHtml(c.category)}</span><span class="cd-badge cd-badge-hl">Hot 100 中 ${c.total} 题用到</span></div>
+      </div>
+      <div class="kd-content">${escapeHtml(c.summary)}</div>
+    </div>
+    <div class="kd-section">
+      <div class="kd-label">底层结构</div>
+      <div class="kd-content">${escapeHtml(c.structure)}</div>
+    </div>
+    <div class="kd-section">
+      <div class="kd-label">常用操作</div>
+      <table class="method-table"><thead><tr><th>操作</th><th>说明</th><th>复杂度</th></tr></thead><tbody>${opsRows}</tbody></table>
+    </div>
+    <div class="kd-section">
+      <div class="kd-label">刷题要点与坑</div>
+      ${notesHtml}
+    </div>
+    <div class="kd-section">
+      <div class="kd-label">代表题目</div>
+      <div class="kd-related-problems">${repsHtml}</div>
+    </div>`;
+}
+
+// ===================================================================
 // 键盘快捷键 & 遮罩层关闭
 // ===================================================================
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
+    if (document.getElementById('containerPanel').classList.contains('open')) { closeContainerPanel(); return; }
     if (document.getElementById('knowledgePanel').classList.contains('open')) { closeKnowledgePanel(); return; }
     if (document.getElementById('confusionPanel').classList.contains('open')) { closeConfusionPanel(); return; }
     if (document.getElementById('confusionFormModal').classList.contains('active')) { closeConfusionForm(); return; }
